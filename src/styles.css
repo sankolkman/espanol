@@ -678,3 +678,131 @@ details.card[open] summary {
   font-size: 1.3rem;
   font-weight: 700;
 }
+
+/* path tabs */
+.path-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 16px;
+  background: var(--surface-2);
+  border-radius: 14px;
+}
+.path-tabs a {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  min-height: 44px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 650;
+  color: var(--muted);
+}
+.path-tabs a.on {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+.hero-bijbel {
+  background: linear-gradient(135deg, #3b2a6b 0%, #5b3f8f 55%, #c08a3e 100%);
+}
+.hero-bijbel .btn.primary {
+  color: #3b2a6b;
+}
+.attribution {
+  margin-top: 24px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* bible passages */
+.bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.chip {
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.chip.used {
+  opacity: 0.4;
+}
+.verses .verse,
+.chapter .verse {
+  line-height: 2;
+  margin: 0 0 10px;
+}
+.vref {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+.verse .tr {
+  display: block;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.verse .speak-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+.gap-select {
+  min-height: 36px;
+  padding: 2px 6px;
+  margin: 0 2px;
+  width: auto;
+  font-size: 0.95rem;
+}
+.gap-select.right {
+  border-color: var(--good);
+  background: var(--good-soft);
+}
+.gap-select.wrong {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
+
+/* reader */
+.reader .chapter {
+  font-size: 1.08rem;
+}
+.word {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.word:hover,
+.word:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+.word-pop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgb(0 0 0 / 0.12);
+}
+.word-pop-inner {
+  max-width: 608px;
+  margin: 0 auto;
+}
+.word-pop strong {
+  font-size: 1.3rem;
+}

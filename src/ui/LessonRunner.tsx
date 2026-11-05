@@ -5,6 +5,7 @@ import { recognitionSupported } from '../speech/recognition'
 import { ttsSupported } from '../speech/tts'
 import { Build } from './exercises/Build'
 import { Choice } from './exercises/Choice'
+import { Cloze } from './exercises/Cloze'
 import { DialogueFill } from './exercises/DialogueFill'
 import { GrammarFill } from './exercises/GrammarFill'
 import { Intro } from './exercises/Intro'
@@ -150,6 +151,8 @@ function ExerciseView(props: { ex: Exercise; locked: boolean; onResult(o: Outcom
       return <DialogueFill ex={ex} locked={locked} onResult={onResult} />
     case 'reading':
       return <ReadingQuiz ex={ex} locked={locked} onResult={onResult} />
+    case 'cloze':
+      return <Cloze ex={ex} locked={locked} onResult={onResult} />
   }
 }
 

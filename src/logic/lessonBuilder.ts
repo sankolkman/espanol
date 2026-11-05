@@ -1,4 +1,4 @@
-import type { Dialogue, Lesson, Reading, Word } from '../content/types'
+import type { Dialogue, Lesson, Passage, Reading, Word } from '../content/types'
 import { normalize } from './normalize'
 import { mulberry32, shuffle } from './shuffle'
 import { pickReview, type ItemProgress } from './srs'
@@ -13,6 +13,8 @@ export type Exercise =
   | { kind: 'grammar'; itemId: string; prompt: string; nl?: string; accepted: string[] }
   | { kind: 'dialogue'; itemId: string; dialogue: Dialogue }
   | { kind: 'reading'; itemId: string; reading: Reading }
+  /** fill the gaps of a passage from a word bank */
+  | { kind: 'cloze'; itemId: string; passage: Passage; bank: string[] }
 
 export interface ReviewPoolItem {
   id: string
@@ -41,6 +43,12 @@ const WORD_FORMS: Form[] = ['choice-nl', 'type-nl', 'listen', 'choice-es', 'spea
 const WORD_FORMS_HARD: Form[] = ['type-nl', 'speak', 'type-es', 'listen', 'choice-nl', 'type-nl']
 const SENTENCE_FORMS: Form[] = ['build', 'choice-es', 'listen', 'type-nl', 'speak']
 const SENTENCE_FORMS_HARD: Form[] = ['type-nl', 'speak', 'build', 'listen', 'type-nl']
+/** long sentences (Bible verses): recognise and say them, don't type or build them */
+const LONG_SENTENCE_FORMS: Form[] = ['choice-es', 'speak', 'choice-nl']
+const LONG_SENTENCE_WORDS = 9
+const CLOZE_DISTRACTORS = 2
+
+const isLong = (item: ReviewPoolItem) => !item.isWord && item.es.split(/\s+/).length >= LONG_SENTENCE_WORDS
 
 export function toPoolItems(lesson: Lesson): ReviewPoolItem[] {
   return [
@@ -111,7 +119,15 @@ function makeExercise(
 
 /** picks the next allowed form for an item, rotating through the list */
 function formFor(item: ReviewPoolItem, turn: number, speech: boolean, hard: boolean): Form {
-  const list = item.isWord ? (hard ? WORD_FORMS_HARD : WORD_FORMS) : hard ? SENTENCE_FORMS_HARD : SENTENCE_FORMS
+  const list = item.isWord
+    ? hard
+      ? WORD_FORMS_HARD
+      : WORD_FORMS
+    : isLong(item)
+      ? LONG_SENTENCE_FORMS
+      : hard
+        ? SENTENCE_FORMS_HARD
+        : SENTENCE_FORMS
   const allowed = list.filter((f) => speech || (f !== 'listen' && f !== 'speak'))
   return allowed[turn % allowed.length]
 }
@@ -140,6 +156,7 @@ export function buildLesson(
     tail.push({ kind: 'grammar', itemId: g.id, prompt: g.prompt, nl: g.nl, accepted: [g.answer, ...(g.alt ?? [])] })
   }
   if (lesson.dialogue) tail.push({ kind: 'dialogue', itemId: lesson.dialogue.id, dialogue: lesson.dialogue })
+  if (lesson.passage) tail.push(clozeExercise(lesson, rng))
   if (lesson.reading) tail.push({ kind: 'reading', itemId: lesson.reading.id, reading: lesson.reading })
 
   // every new word and sentence is practised at least once; review fills ~30%
@@ -206,4 +223,17 @@ export function buildReviewSession(
     items.map((item, i) => makeExercise(item, formFor(item, i + Math.floor(rng() * 6), opts.speech, true), pool, rng)),
     rng,
   )
+}
+
+/** passage fill-in: the gaps plus a few lesson words that are not gaps, shuffled */
+export function clozeExercise(lesson: Lesson, rng: () => number): Exercise {
+  const p = lesson.passage!
+  const taken = new Set(p.gaps.map(normalize))
+  const distractors = shuffle(
+    lesson.words
+      .map((w) => w.forms?.[0] ?? w.es.replace(/^(el|la|los|las|un|una) /i, ''))
+      .filter((w) => !taken.has(normalize(w)) && taken.add(normalize(w))),
+    rng,
+  ).slice(0, CLOZE_DISTRACTORS)
+  return { kind: 'cloze', itemId: p.id, passage: p, bank: shuffle([...new Set(p.gaps), ...distractors], rng) }
 }

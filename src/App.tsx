@@ -1,6 +1,7 @@
 import { GrammarScreen } from './ui/GrammarScreen'
 import { LessonScreen, ReviewScreen } from './ui/LessonScreen'
 import { PathScreen } from './ui/PathScreen'
+import { ReaderScreen } from './ui/ReaderScreen'
 import { useRoute } from './ui/router'
 import { ProgressProvider } from './ui/SettingsContext'
 import { SettingsScreen } from './ui/SettingsScreen'
@@ -15,21 +16,23 @@ const NAV = [
 
 function Screens() {
   const route = useRoute()
-  const inLesson = route.name === 'lesson' || route.name === 'review'
+  const inLesson = route.name === 'lesson' || route.name === 'review' || route.name === 'reader'
   return (
     <div className={`app ${inLesson ? 'in-lesson' : ''}`}>
       {route.name === 'lesson' && route.id ? (
         <LessonScreen key={route.id} lessonId={route.id} />
       ) : route.name === 'review' ? (
-        <ReviewScreen />
+        <ReviewScreen key={route.id} pathId={route.id} />
+      ) : route.name === 'reader' && route.id ? (
+        <ReaderScreen key={route.id} lessonId={route.id} />
       ) : route.name === 'grammar' ? (
-        <GrammarScreen />
+        <GrammarScreen pathId={route.id} />
       ) : route.name === 'words' ? (
-        <WordsScreen />
+        <WordsScreen pathId={route.id} />
       ) : route.name === 'settings' ? (
         <SettingsScreen />
       ) : (
-        <PathScreen />
+        <PathScreen pathId={route.id} />
       )}
       {!inLesson && (
         <nav className="bottom-nav" aria-label="Hoofdmenu">

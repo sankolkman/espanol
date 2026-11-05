@@ -203,3 +203,39 @@ describe('typing edge cases', () => {
     expect(screen.queryByText('Wat mag het zijn?')).toBeNull()
   })
 })
+
+describe('cloze exercise', () => {
+  const cloze: Exercise = {
+    kind: 'cloze',
+    itemId: 'p',
+    bank: ['reino', 'pan', 'luz'],
+    passage: {
+      id: 'p',
+      title: 'Padre nuestro',
+      ref: 'Mateo 6:10-11',
+      verses: [
+        { ref: 'Mateo 6:10', es: 'Venga tu reino.', nl: 'Uw koninkrijk kome.' },
+        { ref: 'Mateo 6:11', es: 'El pan nuestro de cada día, dánoslo hoy.', nl: 'Geef ons vandaag ons dagelijks brood.' },
+      ],
+      gaps: ['reino', 'pan'],
+    },
+  }
+
+  it('fills gaps from the word bank and checks them', async () => {
+    const { user, onFinish } = setup([cloze])
+    expect(check()).toBeDisabled()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Ontbrekend woord 1' }), 'reino')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Ontbrekend woord 2' }), 'pan')
+    await user.click(check())
+    await user.click(next())
+    expect(onFinish).toHaveBeenCalledWith({ correct: 1, total: 1, weakItems: [] })
+  })
+
+  it('marks a wrong choice and shows the answers', async () => {
+    const { user } = setup([cloze])
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Ontbrekend woord 1' }), 'luz')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Ontbrekend woord 2' }), 'pan')
+    await user.click(check())
+    expect(screen.getByText('reino · pan')).toBeInTheDocument()
+  })
+})

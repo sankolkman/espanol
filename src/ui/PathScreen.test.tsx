@@ -38,6 +38,6 @@ describe('PathScreen', () => {
 
   it('enables review after a completed lesson', () => {
     renderWith([first.id])
-    expect(screen.getByRole('link', { name: /Herhalen/ })).toHaveAttribute('href', '#/herhalen')
+    expect(screen.getByRole('link', { name: /Herhalen/ })).toHaveAttribute('href', '#/herhalen/vakantie')
   })
 })

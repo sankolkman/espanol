@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react'
 
-export type Route = { name: 'path' | 'lesson' | 'review' | 'grammar' | 'words' | 'settings'; id?: string }
+export type Route = {
+  name: 'path' | 'lesson' | 'review' | 'reader' | 'grammar' | 'words' | 'settings'
+  id?: string
+}
 
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
+  const id = parts[1] ? decodeURIComponent(parts[1]) : undefined
   switch (parts[0]) {
+    case 'pad':
+      return { name: 'path', id }
     case 'les':
-      return parts[1] ? { name: 'lesson', id: decodeURIComponent(parts[1]) } : { name: 'path' }
+      return id ? { name: 'lesson', id } : { name: 'path' }
+    case 'lees':
+      return id ? { name: 'reader', id } : { name: 'path' }
     case 'herhalen':
-      return { name: 'review' }
+      return { name: 'review', id }
     case 'grammatica':
-      return { name: 'grammar' }
+      return { name: 'grammar', id }
     case 'woorden':
-      return { name: 'words' }
+      return { name: 'words', id }
     case 'instellingen':
       return { name: 'settings' }
     default:

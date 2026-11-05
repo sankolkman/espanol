@@ -6,6 +6,8 @@ export interface Word {
   altEs?: string[]
   altNl?: string[]
   example?: { es: string; nl: string }
+  /** other spellings found in texts (verb forms, plural), used by the reader's word lookup */
+  forms?: string[]
 }
 
 export interface Sentence {
@@ -53,6 +55,31 @@ export interface Reading {
   questions: { q: string; options: string[]; correct: number }[]
 }
 
+export interface PassageVerse {
+  ref: string
+  es: string
+  nl: string
+}
+
+/** Bible passage; every gap is an exact piece of text that is blanked out (first occurrence, in order) */
+export interface Passage {
+  id: string
+  title: string
+  /** human reference, e.g. "Mateo 6:9-13" */
+  ref: string
+  verses: PassageVerse[]
+  gaps: string[]
+}
+
+/** a whole chapter to read in the reader */
+export interface ChapterRead {
+  book: string
+  bookName: string
+  chapter: number
+  /** short Dutch summary shown above the text */
+  summary: string
+}
+
 export interface Lesson {
   id: string
   title: string
@@ -62,10 +89,21 @@ export interface Lesson {
   grammar?: Grammar
   dialogue?: Dialogue
   reading?: Reading
+  passage?: Passage
+  chapter?: ChapterRead
 }
 
 export interface Unit {
   id: string
   title: string
   lessons: Lesson[]
+}
+
+export interface Path {
+  id: string
+  title: string
+  subtitle: string
+  units: Unit[]
+  /** source/licence line shown on the path screen */
+  attribution?: string
 }

@@ -1,25 +1,27 @@
 import { useState } from 'react'
-import { allLessons, lessonById, lessonIds, lessonsBefore, unitOf } from '../content'
+import { allLessons, lessonById, lessonsBefore, pathById, pathLessons, pathOf, siblingIds, unitOf } from '../content'
 import type { Lesson } from '../content/types'
 import { buildLesson, buildReviewSession, toPoolItems, type Exercise } from '../logic/lessonBuilder'
-import { isUnlocked, nextLessonId } from '../logic/progress'
+import { nextLessonId } from '../logic/progress'
 import { LessonRunner, type LessonSummary } from './LessonRunner'
 import { Markdown } from './markdown'
+import { lessonUnlocked } from './paths'
 import { go } from './router'
 import { useProgress } from './SettingsContext'
 
-const close = () => {
-  if (confirm('Les stoppen? Je voortgang in deze les gaat verloren.')) go('#/')
+const closeTo = (pathId: string) => () => {
+  if (confirm('Les stoppen? Je voortgang in deze les gaat verloren.')) go(`#/pad/${pathId}`)
 }
 
 export function LessonScreen({ lessonId }: { lessonId: string }) {
   const { progress, update } = useProgress()
   const lesson = lessonById(lessonId)
+  const pathId = pathOf(lessonId).id
   const [phase, setPhase] = useState<'intro' | 'run' | 'done'>('intro')
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [summary, setSummary] = useState<LessonSummary | null>(null)
 
-  if (!lesson || !isUnlocked(lessonIds, progress.completedLessons, lessonId)) {
+  if (!lesson || !lessonUnlocked(progress.completedLessons, lessonId)) {
     return (
       <main className="screen">
         <p>Deze les bestaat niet of is nog op slot.</p>
@@ -49,19 +51,20 @@ export function LessonScreen({ lessonId }: { lessonId: string }) {
     )
   }
 
-  if (phase === 'run') return <LessonRunner exercises={exercises} onFinish={finish} onClose={close} />
+  if (phase === 'run') return <LessonRunner exercises={exercises} onFinish={finish} onClose={closeTo(pathId)} />
   if (phase === 'done' && summary) {
-    const next = nextLessonId(lessonIds, [...progress.completedLessons, lesson.id])
-    return <LessonDone summary={summary} nextId={next} />
+    const next = nextLessonId(siblingIds(lesson.id), [...progress.completedLessons, lesson.id])
+    return <LessonDone summary={summary} nextId={next} pathId={pathId} />
   }
-  return <LessonIntro lesson={lesson} onStart={start} />
+  return <LessonIntro lesson={lesson} pathId={pathId} onStart={start} />
 }
 
-export function ReviewScreen() {
+export function ReviewScreen({ pathId }: { pathId?: string }) {
   const { progress } = useProgress()
+  const path = pathById(pathId ?? progress.settings.path)
   const [exercises] = useState(() =>
     buildReviewSession(
-      allLessons.filter((l) => progress.completedLessons.includes(l.id)),
+      pathLessons(path.id).filter((l) => progress.completedLessons.includes(l.id)),
       progress.items,
       { speech: progress.settings.speechEnabled, seed: Date.now() % 2147483647, now: Date.now() },
     ),
@@ -72,30 +75,48 @@ export function ReviewScreen() {
     return (
       <main className="screen">
         <p>Rond eerst een les af, dan kun je herhalen.</p>
-        <a className="btn" href="#/">
+        <a className="btn" href={`#/pad/${path.id}`}>
           Terug naar het pad
         </a>
       </main>
     )
   }
-  if (summary) return <LessonDone summary={summary} title="Herhaling klaar!" />
-  return <LessonRunner exercises={exercises} onFinish={setSummary} onClose={close} />
+  if (summary) return <LessonDone summary={summary} title="Herhaling klaar!" pathId={path.id} />
+  return <LessonRunner exercises={exercises} onFinish={setSummary} onClose={closeTo(path.id)} />
 }
 
-function LessonIntro({ lesson, onStart }: { lesson: Lesson; onStart(): void }) {
+function LessonIntro({ lesson, pathId, onStart }: { lesson: Lesson; pathId: string; onStart(): void }) {
   const unit = unitOf(lesson.id)
   return (
     <main className="screen">
-      <a className="close" href="#/" aria-label="Terug">
+      <a className="close" href={`#/pad/${pathId}`} aria-label="Terug">
         ←
       </a>
       <p className="eyebrow muted">{unit?.title}</p>
       <h1>{lesson.title}</h1>
       <p>{lesson.intro}</p>
+      {lesson.chapter && (
+        <section className="card">
+          <h2>Waar gaat het over?</h2>
+          <p>{lesson.chapter.summary}</p>
+          <a className="btn block" href={`#/lees/${lesson.id}`}>
+            📖 Lees {lesson.chapter.bookName} {lesson.chapter.chapter}
+          </a>
+          <p className="muted small">
+            Tik tijdens het lezen op een woord voor de vertaling. Je kunt eerst lezen en dan de les doen, of andersom.
+          </p>
+        </section>
+      )}
       <section className="card">
         <h2>Nieuwe woorden</h2>
         <p lang="es">{lesson.words.map((w) => w.es).join(' · ')}</p>
       </section>
+      {lesson.passage && !lesson.chapter && (
+        <section className="card">
+          <h2>Tekst: {lesson.passage.ref}</h2>
+          <p className="muted small">Aan het eind van de les vul je in deze tekst de ontbrekende woorden in.</p>
+        </section>
+      )}
       {lesson.grammar && (
         <section className="card">
           <h2>Grammatica: {lesson.grammar.title}</h2>
@@ -116,12 +137,13 @@ function lookup(id: string): { es: string; nl: string } | null {
     const g = l.grammar?.items.find((x) => x.id === id)
     if (g) return { es: g.prompt.replace('___', g.answer), nl: g.nl ?? 'grammatica' }
     if (l.dialogue?.id === id) return { es: l.dialogue.title, nl: 'gesprek' }
-    if (l.reading?.id === id) return { es: l.reading.title, nl: 'leestekst' }
+    if (l.reading?.id === id) return { es: l.reading.title, nl: 'vragen' }
+    if (l.passage?.id === id) return { es: l.passage.ref, nl: 'tekst invullen' }
   }
   return null
 }
 
-function LessonDone(props: { summary: LessonSummary; nextId?: string | null; title?: string }) {
+function LessonDone(props: { summary: LessonSummary; nextId?: string | null; title?: string; pathId: string }) {
   const { correct, total, weakItems } = props.summary
   const pct = total ? Math.round((correct / total) * 100) : 100
   return (
@@ -159,7 +181,7 @@ function LessonDone(props: { summary: LessonSummary; nextId?: string | null; tit
             Volgende les
           </a>
         )}
-        <a className="btn" href="#/">
+        <a className="btn" href={`#/pad/${props.pathId}`}>
           Terug naar het pad
         </a>
       </div>

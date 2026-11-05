@@ -1,21 +1,25 @@
-import { course, lessonById, lessonIds } from '../content'
-import { isUnlocked, nextLessonId } from '../logic/progress'
+import { pathLessonIds, lessonById } from '../content'
+import { nextLessonId } from '../logic/progress'
+import { lessonUnlocked, PathTabs, useCurrentPath } from './paths'
 import { useProgress } from './SettingsContext'
 
-export function PathScreen() {
+export function PathScreen(props: { pathId?: string }) {
   const { progress } = useProgress()
-  const done = progress.completedLessons
-  const next = nextLessonId(lessonIds, done)
+  const path = useCurrentPath(props.pathId)
+  const ids = pathLessonIds(path.id)
+  const done = progress.completedLessons.filter((id) => ids.includes(id))
+  const next = nextLessonId(ids, done)
   const nextLesson = next ? lessonById(next) : undefined
   let n = 0
 
   return (
     <main className="screen">
-      <header className="hero">
-        <p className="eyebrow">¡Hola!</p>
-        <h1>Español voor op vakantie</h1>
+      <PathTabs current={path.id} hrefFor={(id) => `#/pad/${id}`} />
+      <header className={`hero hero-${path.id}`}>
+        <p className="eyebrow">{path.id === 'bijbel' ? 'Palabra de Dios' : '¡Hola!'}</p>
+        <h1>{path.subtitle}</h1>
         <p className="muted">
-          {done.length} van {lessonIds.length} lessen afgerond
+          {done.length} van {ids.length} lessen afgerond
         </p>
         <div className="hero-actions">
           {nextLesson ? (
@@ -26,7 +30,7 @@ export function PathScreen() {
             <p className="done-all">¡Enhorabuena! Je hebt alle lessen afgerond.</p>
           )}
           {done.length > 0 ? (
-            <a className="btn" href="#/herhalen">
+            <a className="btn" href={`#/herhalen/${path.id}`}>
               Herhalen
             </a>
           ) : (
@@ -38,7 +42,7 @@ export function PathScreen() {
       </header>
 
       <ol className="path">
-        {course.map((unit, ui) => (
+        {path.units.map((unit, ui) => (
           <li key={unit.id} className="unit">
             <h2>
               <span className="unit-no">{ui + 1}</span> {unit.title}
@@ -47,7 +51,7 @@ export function PathScreen() {
               {unit.lessons.map((lesson) => {
                 n++
                 const completed = done.includes(lesson.id)
-                const open = isUnlocked(lessonIds, done, lesson.id)
+                const open = lessonUnlocked(progress.completedLessons, lesson.id)
                 const state = completed ? 'done' : open ? 'open' : 'locked'
                 const label = (
                   <>
@@ -76,6 +80,7 @@ export function PathScreen() {
           </li>
         ))}
       </ol>
+      {path.attribution && <p className="attribution">{path.attribution}</p>}
     </main>
   )
 }

@@ -4,6 +4,8 @@ export interface Settings {
   voiceURI?: string
   rate: 1 | 0.75
   speechEnabled: boolean
+  /** last opened learning path */
+  path?: string
 }
 
 export interface Progress {

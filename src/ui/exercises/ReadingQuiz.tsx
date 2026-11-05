@@ -18,11 +18,13 @@ export function ReadingQuiz({ ex, locked, onResult }: ExerciseProps<Extract<Exer
     <div>
       <p className="kind">Lezen</p>
       <h2>
-        {r.title} <SpeakButton text={r.text} />
+        {r.title} {r.text && <SpeakButton text={r.text} />}
       </h2>
-      <div className="reading-text" lang="es">
-        {r.text}
-      </div>
+      {r.text && (
+        <div className="reading-text" lang="es">
+          {r.text}
+        </div>
+      )}
       {r.questions.map((q, qi) => (
         <div key={qi}>
           <p className="question">{q.q}</p>

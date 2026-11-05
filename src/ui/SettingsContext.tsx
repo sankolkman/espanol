@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
-import { allItemIds, lessonIds } from '../content'
+import { allItemIds, allLessons } from '../content'
 import { loadProgress, pruneUnknown, saveProgress, type Progress } from '../logic/progress'
 
 interface Ctx {
@@ -11,7 +11,7 @@ const ProgressContext = createContext<Ctx | null>(null)
 
 export function ProgressProvider(props: { children: ReactNode; initial?: Progress }) {
   const [progress, setProgress] = useState<Progress>(
-    () => props.initial ?? pruneUnknown(loadProgress(), allItemIds(), new Set(lessonIds)),
+    () => props.initial ?? pruneUnknown(loadProgress(), allItemIds(), new Set(allLessons.map((l) => l.id))),
   )
   const update = useCallback((fn: (p: Progress) => Progress) => {
     setProgress((prev) => {

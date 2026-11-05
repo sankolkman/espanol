@@ -1,13 +1,15 @@
-import { allLessons, lessonIds } from '../content'
-import { isUnlocked } from '../logic/progress'
+import { pathLessons } from '../content'
+import { lessonUnlocked, PathTabs, useCurrentPath } from './paths'
 import { Markdown } from './markdown'
 import { useProgress } from './SettingsContext'
 
-export function GrammarScreen() {
+export function GrammarScreen(props: { pathId?: string }) {
   const { progress } = useProgress()
-  const lessons = allLessons.filter((l) => l.grammar && isUnlocked(lessonIds, progress.completedLessons, l.id))
+  const path = useCurrentPath(props.pathId)
+  const lessons = pathLessons(path.id).filter((l) => l.grammar && lessonUnlocked(progress.completedLessons, l.id))
   return (
     <main className="screen">
+      <PathTabs current={path.id} hrefFor={(id) => `#/grammatica/${id}`} />
       <h1>Grammatica</h1>
       <p className="muted small">Uitleg uit je vrijgespeelde lessen. Tik om open te klappen.</p>
       {lessons.length === 0 && <p className="muted">Nog geen grammatica vrijgespeeld.</p>}

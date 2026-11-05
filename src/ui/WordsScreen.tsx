@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { allLessons, lessonIds } from '../content'
+import { pathLessons } from '../content'
 import { normalize, stripAccents } from '../logic/normalize'
-import { isUnlocked } from '../logic/progress'
+import { lessonUnlocked, PathTabs, useCurrentPath } from './paths'
 import { useProgress } from './SettingsContext'
 import { SpeakButton } from './SpeakButton'
 
@@ -19,22 +19,24 @@ export function filterWords<T extends WordLike>(words: T[], query: string): T[] 
   return words.filter((w) => key(w.es).includes(q) || key(w.nl).includes(q))
 }
 
-export function WordsScreen() {
+export function WordsScreen(props: { pathId?: string }) {
   const { progress } = useProgress()
   const [query, setQuery] = useState('')
+  const path = useCurrentPath(props.pathId)
   const words = useMemo(
     () =>
-      allLessons
-        .filter((l) => isUnlocked(lessonIds, progress.completedLessons, l.id))
+      pathLessons(path.id)
+        .filter((l) => lessonUnlocked(progress.completedLessons, l.id))
         .flatMap((l) => l.words)
         .sort((a, b) => key(a.es.replace(/^(el|la|los|las|un|una) /, '')).localeCompare(key(b.es.replace(/^(el|la|los|las|un|una) /, '')))),
-    [progress.completedLessons],
+    [progress.completedLessons, path.id],
   )
   const shown = filterWords(words, query)
   const itemProgress = progress.items
 
   return (
     <main className="screen">
+      <PathTabs current={path.id} hrefFor={(id) => `#/woorden/${id}`} />
       <h1>Woorden</h1>
       <p className="muted small">{words.length} woorden uit je vrijgespeelde lessen.</p>
       <input

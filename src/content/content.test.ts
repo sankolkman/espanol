@@ -1,20 +1,26 @@
-import { allItemIds, allLessons, course } from '.'
+import { allItemIds, allLessons, course, lessonsBefore, pathLessons, paths } from '.'
+import { chapterVerses } from './bible'
+import { clozeVerses } from '../logic/cloze'
 
-describe('course content', () => {
+const holiday = pathLessons('vakantie')
+const bible = pathLessons('bijbel')
+
+describe('holiday course content', () => {
   it('has ~20 lessons in 6 units', () => {
     expect(course).toHaveLength(6)
-    expect(allLessons.length).toBeGreaterThanOrEqual(18)
+    expect(holiday.length).toBeGreaterThanOrEqual(18)
   })
 
   it('has unique ids', () => {
     const ids: string[] = []
-    for (const u of course) ids.push(u.id)
+    for (const u of paths.flatMap((x) => x.units)) ids.push(u.id)
     for (const l of allLessons) {
       ids.push(l.id)
       ids.push(...l.words.map((w) => w.id), ...l.sentences.map((s) => s.id))
       if (l.grammar) ids.push(l.grammar.id, ...l.grammar.items.map((g) => g.id))
       if (l.dialogue) ids.push(l.dialogue.id)
       if (l.reading) ids.push(l.reading.id)
+      if (l.passage) ids.push(l.passage.id)
     }
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i)
     expect(dupes).toEqual([])
@@ -50,13 +56,13 @@ describe('course content', () => {
   })
 
   it('has dialogues from lesson 2 on and readings from unit 3 on', () => {
-    expect(allLessons.slice(1).every((l) => l.dialogue)).toBe(true)
+    expect(holiday.slice(1).every((l) => l.dialogue)).toBe(true)
     expect(course.slice(2).flatMap((u) => u.lessons).filter((l) => l.reading).length).toBeGreaterThanOrEqual(6)
   })
 
   it('grows from ~5 to ~10 new words', () => {
-    expect(allLessons[0].words.length).toBeLessThanOrEqual(6)
-    expect(allLessons.at(-1)!.words.length).toBeGreaterThanOrEqual(9)
+    expect(holiday[0].words.length).toBeLessThanOrEqual(6)
+    expect(holiday.at(-1)!.words.length).toBeGreaterThanOrEqual(9)
   })
 })
 
@@ -74,17 +80,51 @@ describe('grammar explanations render cleanly', () => {
 })
 
 describe('real lessons build well', () => {
-  it.each(allLessons.map((l, i) => [l.id, i] as const))('%s: 15–25 exercises, every new item practised', async (_id, i) => {
+  it.each(allLessons.map((l) => [l.id, l] as const))('%s: 15–25 exercises, every new item practised', async (_id, lesson) => {
     const { buildLesson } = await import('../logic/lessonBuilder')
-    const lesson = allLessons[i]
     for (const speech of [true, false]) {
-      const exs = buildLesson(lesson, allLessons.slice(0, i), {}, { speech, seed: 7, now: 0 })
+      const exs = buildLesson(lesson, lessonsBefore(lesson.id), {}, { speech, seed: 7, now: 0 })
       const practice = exs.filter((e) => e.kind !== 'intro')
       expect(practice.length).toBeGreaterThanOrEqual(15)
       expect(practice.length).toBeLessThanOrEqual(25)
       for (const x of [...lesson.words, ...lesson.sentences]) {
         expect(practice.some((e) => e.itemId === x.id)).toBe(true)
       }
+    }
+  })
+})
+
+describe('bible path content', () => {
+  it('has three phases: known passages, stories and all 16 chapters of Mark', () => {
+    expect(bible.filter((l) => l.id.startsWith('b1')).length).toBeGreaterThanOrEqual(5)
+    expect(bible.filter((l) => l.id.startsWith('b2')).length).toBeGreaterThanOrEqual(5)
+    expect(bible.filter((l) => l.chapter?.book === 'MAR').map((l) => l.chapter!.chapter)).toEqual(
+      Array.from({ length: 16 }, (_, i) => i + 1),
+    )
+  })
+
+  it.each(bible.map((l) => [l.id, l] as const))('%s has a passage whose gaps are all in the text', (_id, l) => {
+    expect(l.passage).toBeDefined()
+    const p = l.passage!
+    expect(p.gaps.length).toBeGreaterThanOrEqual(4)
+    expect(() => clozeVerses(p)).not.toThrow()
+    for (const v of p.verses) {
+      expect(v.es.length).toBeGreaterThan(0)
+      expect(v.es).not.toMatch(/[[]]/)
+      expect(v.nl.trim().length).toBeGreaterThan(0)
+    }
+  })
+
+  it('has every verse of every Mark chapter', () => {
+    // this translation leaves out 7:16, 9:44, 9:46, 11:26, 15:28 and ends Mark at 16:8 (oldest manuscripts)
+    const lengths = [45, 28, 35, 41, 43, 56, 36, 38, 48, 52, 32, 44, 37, 72, 46, 8]
+    lengths.forEach((n, i) => expect(chapterVerses('MAR', i + 1)).toHaveLength(n))
+  })
+
+  it('Mark lessons have a summary and three questions', () => {
+    for (const l of bible.filter((x) => x.chapter)) {
+      expect(l.chapter!.summary.length).toBeGreaterThan(40)
+      expect(l.reading?.questions).toHaveLength(3)
     }
   })
 })

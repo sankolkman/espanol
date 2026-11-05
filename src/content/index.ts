@@ -1,4 +1,5 @@
-import type { Lesson, Unit } from './types'
+import { bibleUnits, BIBLE_ATTRIBUTION } from './bible'
+import type { Lesson, Path, Unit, Word } from './types'
 import { unit1 } from './unit1'
 import { unit2 } from './unit2'
 import { unit3 } from './unit3'
@@ -6,22 +7,62 @@ import { unit4 } from './unit4'
 import { unit5 } from './unit5'
 import { unit6 } from './unit6'
 
+/** the holiday path */
 export const course: Unit[] = [unit1, unit2, unit3, unit4, unit5, unit6]
 
-export const allLessons: Lesson[] = course.flatMap((u) => u.lessons)
-export const lessonIds: string[] = allLessons.map((l) => l.id)
+export const paths: Path[] = [
+  { id: 'vakantie', title: 'Vakantie', subtitle: 'Español voor op vakantie', units: course },
+  {
+    id: 'bijbel',
+    title: 'Bijbel',
+    subtitle: 'Het Nieuwe Testament lezen',
+    units: bibleUnits,
+    attribution: BIBLE_ATTRIBUTION,
+  },
+]
+
+export const DEFAULT_PATH = 'vakantie'
+
+export const allLessons: Lesson[] = paths.flatMap((p) => p.units.flatMap((u) => u.lessons))
+
+export function pathById(id: string | undefined): Path {
+  return paths.find((p) => p.id === id) ?? paths[0]
+}
+
+export function pathLessons(pathId: string): Lesson[] {
+  return pathById(pathId).units.flatMap((u) => u.lessons)
+}
+
+export function pathLessonIds(pathId: string): string[] {
+  return pathLessons(pathId).map((l) => l.id)
+}
+
+export function pathOf(lessonId: string): Path {
+  return paths.find((p) => p.units.some((u) => u.lessons.some((l) => l.id === lessonId))) ?? paths[0]
+}
+
+/** lesson ids of the path the lesson belongs to, in order */
+export function siblingIds(lessonId: string): string[] {
+  return pathLessonIds(pathOf(lessonId).id)
+}
 
 export function lessonById(id: string): Lesson | undefined {
   return allLessons.find((l) => l.id === id)
 }
 
+/** earlier lessons in the same path */
 export function lessonsBefore(id: string): Lesson[] {
-  const i = allLessons.findIndex((l) => l.id === id)
-  return i < 0 ? [] : allLessons.slice(0, i)
+  const lessons = pathLessons(pathOf(id).id)
+  const i = lessons.findIndex((l) => l.id === id)
+  return i < 0 ? [] : lessons.slice(0, i)
 }
 
 export function unitOf(lessonId: string): Unit | undefined {
-  return course.find((u) => u.lessons.some((l) => l.id === lessonId))
+  return paths.flatMap((p) => p.units).find((u) => u.lessons.some((l) => l.id === lessonId))
+}
+
+export function allWords(pathId: string): Word[] {
+  return pathLessons(pathId).flatMap((l) => l.words)
 }
 
 export function allItemIds(): Set<string> {
@@ -32,6 +73,7 @@ export function allItemIds(): Set<string> {
     for (const g of l.grammar?.items ?? []) ids.add(g.id)
     if (l.dialogue) ids.add(l.dialogue.id)
     if (l.reading) ids.add(l.reading.id)
+    if (l.passage) ids.add(l.passage.id)
   }
   return ids
 }

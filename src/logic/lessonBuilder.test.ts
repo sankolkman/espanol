@@ -228,3 +228,51 @@ describe('buildLesson coverage', () => {
     }
   })
 })
+
+describe('Bible lessons', () => {
+  const longVerse = 'Dios amó tanto al mundo que dio a su Hijo Unigénito, para que todo el que cree en Él no perezca.'
+  const bible: Lesson = {
+    id: 'B1',
+    title: 'Juan 3:16',
+    intro: 'x',
+    words: [
+      { id: 'bw1', es: 'Dios', nl: 'God' },
+      { id: 'bw2', es: 'el mundo', nl: 'de wereld' },
+      { id: 'bw3', es: 'el Hijo', nl: 'de Zoon' },
+      { id: 'bw4', es: 'la vida', nl: 'het leven' },
+      { id: 'bw5', es: 'amar', nl: 'liefhebben', forms: ['amó'] },
+      { id: 'bw6', es: 'creer', nl: 'geloven', forms: ['cree'] },
+    ],
+    sentences: [
+      { id: 'bs1', es: longVerse, nl: 'God had de wereld zo lief…' },
+      { id: 'bs2', es: 'Dios es amor.', nl: 'God is liefde.' },
+    ],
+    passage: {
+      id: 'bp',
+      title: 'Juan 3:16',
+      ref: 'Juan 3:16',
+      verses: [{ ref: '16', es: longVerse, nl: 'God had de wereld zo lief…' }],
+      gaps: ['amó', 'mundo', 'Hijo'],
+    },
+  }
+
+  it('adds a fill-in exercise with a word bank', () => {
+    const exs = buildLesson(bible, [], {}, opts)
+    const cloze = exs.filter((e) => e.kind === 'cloze')
+    expect(cloze).toHaveLength(1)
+    const c = cloze[0]
+    if (c.kind !== 'cloze') throw new Error()
+    expect(c.itemId).toBe('bp')
+    for (const g of ['amó', 'mundo', 'Hijo']) expect(c.bank).toContain(g)
+    expect(c.bank.length).toBe(5)
+    expect(new Set(c.bank).size).toBe(5)
+  })
+
+  it('never asks to type, build or dictate a long verse', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      for (const e of buildLesson(bible, [], {}, { ...opts, seed })) {
+        if (e.itemId === 'bs1') expect(['choice', 'speak']).toContain(e.kind)
+      }
+    }
+  })
+})
