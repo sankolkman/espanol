@@ -1,0 +1,11 @@
+{
+  "name": "Español – vakantie-Spaans",
+  "short_name": "Español",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf6ef",
+  "theme_color": "#c2410c",
+  "lang": "nl",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
