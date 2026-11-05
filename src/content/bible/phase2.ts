@@ -1,6 +1,6 @@
 import { items, words } from '../helpers'
 import type { Unit } from '../types'
-import { passage, verseSentences } from './helpers'
+import { passage, saying, verseSentences } from './helpers'
 
 const nacimiento = passage(
   'b2l1-p',
@@ -115,6 +115,9 @@ export const phase2: Unit = {
       sentences: verseSentences('b2l1', nacimiento, [3], [
         ['¡Gloria a Dios en las alturas!', 'Eer aan God in de hoogste hemel!'],
         ['El ángel les dijo: ¡No teman!', 'De engel zei tegen hen: Wees niet bang!'],
+        saying('LUK 1:37', 'Para Dios ninguna cosa es imposible.', 'Voor God is niets onmogelijk.'),
+        saying('JOH 1:14', 'El Verbo se encarnó y vivió entre nosotros.', 'Het Woord is mens geworden en heeft onder ons gewoond.'),
+        saying('LUK 2:10', 'Les traigo Buenas Noticias de gran gozo.', 'Ik breng jullie goed nieuws van grote vreugde.'),
       ]),
       grammar: {
         id: 'b2l1-g',
@@ -170,6 +173,9 @@ Veel gebruikte onregelmatige vormen, leer ze als woordjes:
       sentences: verseSentences('b2l2', hijoPerdido, [3], [
         ['Un hombre tenía dos hijos.', 'Een man had twee zonen.'],
         ['Su padre lo vio y tuvo compasión de él.', 'Zijn vader zag hem en kreeg medelijden met hem.'],
+        saying('LUK 15:24', 'Estaba perdido y fue hallado.', 'Hij was verloren en is gevonden.'),
+        saying('LUK 15:24', 'Este hijo mío estaba muerto y revivió.', 'Deze zoon van mij was dood en leeft weer.'),
+        saying('LUK 15:18', 'Padre, pequé contra el cielo y contra ti.', 'Vader, ik heb gezondigd tegen de hemel en tegen u.'),
       ]),
       grammar: {
         id: 'b2l2-g',
@@ -223,6 +229,9 @@ Drie onregelmatige vormen die je steeds tegenkomt:
       sentences: verseSentences('b2l3', samaritano, [1], [
         ['Un hombre bajaba de Jerusalén a Jericó.', 'Een man ging van Jeruzalem naar Jericho.'],
         ['Lo vio y fue movido a compasión.', 'Hij zag hem en kreeg medelijden.'],
+        saying('LUK 10:37', 'Vé y haz tú lo mismo.', 'Ga heen en doe jij hetzelfde.'),
+        saying('MAT 9:12', 'Los sanos no necesitan médico, sino los enfermos.', 'Gezonden hebben geen dokter nodig, maar zieken.'),
+        saying('JOH 11:35', 'Jesús lloró.', 'Jezus huilde.'),
       ]),
       grammar: {
         id: 'b2l3-g',
@@ -270,6 +279,9 @@ Bij een opdracht plak je het achter het werkwoord: Cuída**lo** = zorg voor hem,
       sentences: verseSentences('b2l4', tormenta, [1], [
         ['¡Señor, sálvanos!', 'Heer, red ons!'],
         ['¡Hombres de poca fe! ¿Por qué temen?', 'Mensen van weinig geloof! Waarom zijn jullie bang?'],
+        saying('MAT 14:27', '¡Tengan ánimo, Yo soy, no teman!', 'Houd moed, Ik ben het, wees niet bang!'),
+        saying('MAR 4:39', '¡Calla! ¡Enmudece!', 'Zwijg! Wees stil!'),
+        saying('MAR 10:27', 'Todas las cosas son posibles para Dios.', 'Alle dingen zijn mogelijk voor God.'),
       ]),
       grammar: {
         id: 'b2l4-g',
@@ -319,6 +331,9 @@ Het woordje verandert mee met de persoon:
       sentences: verseSentences('b2l5', panes, [1], [
         ['Jesús tomó los panes y los peces.', 'Jezus nam de broden en de vissen.'],
         ['Que nada se pierda.', 'Dat er niets verloren gaat.'],
+        saying('1TH 5:18', 'Den gracias en todo.', 'Dank God in alles.'),
+        saying('MAT 6:34', 'No se afanen por el mañana.', 'Maak je geen zorgen over morgen.'),
+        saying('MAT 6:33', 'Busquen primeramente el reino de Dios.', 'Zoek eerst het koninkrijk van God.'),
       ]),
       grammar: {
         id: 'b2l5-g',
@@ -370,6 +385,9 @@ Let op: in het Spaans is de punt het scheidingsteken bij duizendtallen: *5.000* 
       sentences: verseSentences('b2l6', resurreccion, [5], [
         ['No está aquí.', 'Hij is niet hier.'],
         ['Él va delante de ustedes a Galilea.', 'Hij gaat jullie voor naar Galilea.'],
+        saying('JOH 11:25', 'Yo soy la Resurrección y la Vida.', 'Ik ben de Opstanding en het Leven.'),
+        saying('1CO 15:55', '¿Dónde está, oh muerte, tu aguijón?', 'Dood, waar is je angel?'),
+        saying('REV 21:5', 'Hago nuevas todas las cosas.', 'Ik maak alle dingen nieuw.'),
       ]),
       grammar: {
         id: 'b2l6-g',

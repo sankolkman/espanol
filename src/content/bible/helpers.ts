@@ -10,6 +10,12 @@ export const BOOK_NAMES: Record<string, string> = {
   JOH: 'Juan',
   '1CO': '1 Corintios',
   '1JO': '1 Juan',
+  ROM: 'Romanos',
+  PHI: 'Filipenses',
+  '1TH': '1 Tesalonicenses',
+  HEB: 'Hebreos',
+  ACT: 'Hechos',
+  REV: 'Apocalipsis',
 }
 
 /** verse text, e.g. verse('MAT 6:9'); throws for unknown refs so content errors surface in tests */
@@ -34,6 +40,22 @@ export function passage(id: string, title: string, ref: string, list: [string, s
 export function verseSentences(lesson: string, p: Passage, picks: number[], extra: [string, string][] = []): Sentence[] {
   const fromVerses = picks.map((i) => ({ es: p.verses[i].es, nl: p.verses[i].nl }))
   return [...fromVerses, ...extra.map(([es, nl]) => ({ es, nl }))].map((s, i) => ({ id: `${lesson}-s-${i + 1}`, ...s }))
+}
+
+const plain = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[¿¡.,;:!?]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+/**
+ * A short well-known saying taken literally from a verse: [es, "nl (Reference)"].
+ * Throws when the Spanish is not in that verse, so a typo surfaces in the tests.
+ */
+export function saying(ref: string, es: string, nl: string): [string, string] {
+  if (!plain(verse(ref)).includes(plain(es))) throw new Error(`"${es}" is not in ${ref}`)
+  return [es, `${nl} (${displayRef(ref)})`]
 }
 
 /** all verses of a chapter in order; verses this translation leaves out (e.g. Mark 7:16) are skipped */

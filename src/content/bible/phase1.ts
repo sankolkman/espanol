@@ -1,6 +1,6 @@
 import { items, words } from '../helpers'
 import type { Unit } from '../types'
-import { passage, verseSentences } from './helpers'
+import { passage, saying, verseSentences } from './helpers'
 
 const padreNuestro = passage(
   'b1l1-p',
@@ -105,7 +105,11 @@ export const phase1: Unit = {
         ['el pan', 'het brood', { gender: 'm' }],
         ['perdonar', 'vergeven', { forms: ['perdónanos', 'perdonamos', 'perdonados', 'perdona'] }],
       ]),
-      sentences: verseSentences('b1l1', padreNuestro, [1, 2, 4]),
+      sentences: verseSentences('b1l1', padreNuestro, [1, 2, 4], [
+        saying('MAT 7:7', 'Pidan y se les dará.', 'Bid en het zal jullie gegeven worden.'),
+        saying('MAT 7:7', 'Busquen y hallarán.', 'Zoek en jullie zullen vinden.'),
+        saying('JOH 10:30', 'Yo y el Padre somos uno.', 'Ik en de Vader zijn één.'),
+      ]),
       grammar: {
         id: 'b1l1-g',
         title: 'Mijn, jouw, onze: bezittelijke voornaamwoorden',
@@ -148,7 +152,12 @@ Let op het verschil: **tu** (jouw) heeft geen accent, **tú** (jij) wel.`,
         ['eterno', 'eeuwig', { forms: ['eterna'] }],
         ['conocer', 'kennen', { forms: ['conoce', 'conocen', 'conozco'] }],
       ]),
-      sentences: verseSentences('b1l2', diosEsAmor, [0, 3], [['Dios es amor.', 'God is liefde.']]),
+      sentences: verseSentences('b1l2', diosEsAmor, [0, 3], [
+        ['Dios es amor.', 'God is liefde.'],
+        saying('1JO 4:19', 'Nosotros amamos, porque Él nos amó primero.', 'Wij hebben lief, omdat Hij ons eerst heeft liefgehad.'),
+        saying('1CO 16:14', 'Hagan todo con amor.', 'Doe alles met liefde.'),
+        saying('JOH 13:34', 'Que se amen unos a otros.', 'Heb elkaar lief.'),
+      ]),
       grammar: {
         id: 'b1l2-g',
         title: 'El que…: wie…',
@@ -190,7 +199,12 @@ Een paar vormen die je al kunt herkennen:
         ['la sed', 'de dorst', { gender: 'f' }],
         ['llamar', 'noemen, roepen', { forms: ['llamados', 'llamó', 'llames'], altNl: ['noemen', 'roepen'] }],
       ]),
-      sentences: verseSentences('b1l3', bienaventuranzas, [1, 5], [['Ellos verán a Dios.', 'Zij zullen God zien.']]),
+      sentences: verseSentences('b1l3', bienaventuranzas, [1, 5], [
+        ['Ellos verán a Dios.', 'Zij zullen God zien.'],
+        saying('MAT 5:14', 'Ustedes son la luz del mundo.', 'Jullie zijn het licht van de wereld.'),
+        saying('JOH 20:29', 'Inmensamente felices los que no vieron y creyeron.', 'Heel gelukkig zijn wie niet gezien hebben en toch geloofden.'),
+        saying('MAT 4:4', 'No solo de pan vivirá el hombre.', 'De mens zal niet alleen van brood leven.'),
+      ]),
       grammar: {
         id: 'b1l3-g',
         title: 'De toekomende tijd: zullen',
@@ -234,6 +248,9 @@ Meer voorbeelden: heredar → heredar**án** (zij zullen erven), ser → ser**á
       sentences: verseSentences('b1l4', elAmor, [3], [
         ['El amor es paciente.', 'De liefde is geduldig.'],
         ['El amor nunca caduca.', 'De liefde vergaat nooit.'],
+        saying('1CO 13:13', 'La fe, la esperanza, el amor.', 'Geloof, hoop en liefde.'),
+        saying('1CO 13:13', 'El mayor de éstos es el amor.', 'De grootste daarvan is de liefde.'),
+        saying('1TH 5:16', '¡Estén siempre gozosos!', 'Wees altijd blij!'),
       ]),
       grammar: {
         id: 'b1l4-g',
@@ -277,6 +294,9 @@ Of achter het werkwoord, en dan staat er óók **no** voor. In het Spaans mag da
       sentences: verseSentences('b1l5', yoSoy, [2], [
         ['Yo soy el Camino, la Verdad y la Vida.', 'Ik ben de Weg, de Waarheid en het Leven.'],
         ['Yo soy la Luz del mundo.', 'Ik ben het Licht van de wereld.'],
+        saying('JOH 6:35', 'Yo soy el Pan de la Vida.', 'Ik ben het Brood van het Leven.'),
+        saying('JOH 15:5', 'Yo soy la Vid, ustedes las ramas.', 'Ik ben de Wijnstok, jullie zijn de ranken.'),
+        saying('JOH 8:32', 'La Verdad los libertará.', 'De Waarheid zal jullie vrijmaken.'),
       ]),
       grammar: {
         id: 'b1l5-g',
@@ -321,6 +341,9 @@ Met *con* zijn er twee aparte vormen: **conmigo** (met mij) en **contigo** (met 
       ]),
       sentences: verseSentences('b1l6', mandamiento, [3], [
         ['Amarás a tu prójimo como a ti mismo.', 'Je zult je naaste liefhebben als jezelf.'],
+        saying('MAT 5:44', 'Amen a sus enemigos.', 'Heb je vijanden lief.'),
+        saying('JOH 14:1', 'Crean en Dios, crean también en Mí.', 'Geloof in God, geloof ook in Mij.'),
+        saying('MAT 28:20', 'Yo estoy con ustedes todos los días.', 'Ik ben met jullie, alle dagen.'),
       ]),
       grammar: {
         id: 'b1l6-g',

@@ -128,3 +128,39 @@ describe('bible path content', () => {
     }
   })
 })
+
+describe('progress is kept across content updates', () => {
+  it('every lesson and item id from the published version still exists with the same text', async () => {
+    const fixture: Record<string, string> = (await import('./progress-ids.fixture.json')).default
+    const now: Record<string, string> = {}
+    for (const l of allLessons) {
+      now[l.id] = l.title
+      for (const w of l.words) now[w.id] = w.es
+      for (const s of l.sentences) now[s.id] = s.es
+      for (const g of l.grammar?.items ?? []) now[g.id] = g.prompt
+      if (l.dialogue) now[l.dialogue.id] = l.dialogue.title
+      if (l.reading) now[l.reading.id] = l.reading.title
+      if (l.passage) now[l.passage.id] = l.passage.ref
+    }
+    const changed = Object.entries(fixture).filter(([id, text]) => now[id] !== text)
+    expect(changed).toEqual([])
+  })
+
+  it('keeps the lesson order of each path', async () => {
+    const fixture: Record<string, string> = (await import('./progress-ids.fixture.json')).default
+    const lessonIdsBefore = Object.keys(fixture).filter((id) => /^(u\d+l\d+|b\d+l\d+)$/.test(id))
+    const lessonIdsNow = allLessons.map((l) => l.id)
+    expect(lessonIdsNow.slice(0, lessonIdsBefore.length)).toEqual(lessonIdsBefore)
+  })
+})
+
+describe('short well-known sayings in phase 1 and 2', () => {
+  const short = (es: string) => es.split(/\s+/).length <= 8
+  it.each(bible.filter((l) => /^b[12]/.test(l.id)).map((l) => [l.id, l] as const))(
+    '%s has at least 3 short sayings with a reference',
+    (_id, l) => {
+      const sayings = l.sentences.filter((s) => short(s.es) && /\(\d? ?[A-Z][a-z]+ \d+:\d+\)$/.test(s.nl))
+      expect(sayings.length).toBeGreaterThanOrEqual(3)
+    },
+  )
+})

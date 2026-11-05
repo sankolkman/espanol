@@ -31,6 +31,17 @@ const RANGES = [
   ['JOH', 6, 8, 13],
   ['MAT', 28, 1, 7],
   ...Array.from({ length: 16 }, (_, i) => ['MAR', i + 1, 1, 0]),
+  // short well-known sayings (phase 1 and 2)
+  ...[
+    'MAT 7:7', 'JOH 10:30', '1JO 4:19', '1CO 16:14', 'JOH 13:34', 'MAT 5:14', 'JOH 20:29', 'MAT 4:4',
+    '1CO 13:13', '1TH 5:16', 'JOH 6:35', 'JOH 15:5', 'JOH 8:32', 'MAT 5:44', 'JOH 14:1', 'MAT 28:20',
+    'LUK 1:37', 'JOH 1:14', 'LUK 15:24', 'JOH 11:35', 'MAT 9:12', 'LUK 10:37', 'MAT 14:27', 'MAR 4:39',
+    'MAR 10:27', '1TH 5:18', 'MAT 6:34', 'MAT 6:33', '1CO 15:55', 'REV 21:5',
+  ].map((ref) => {
+    const [book, cv] = ref.split(' ')
+    const [c, v] = cv.split(':').map(Number)
+    return [book, c, v, v]
+  }),
 ]
 
 const src = process.argv[2]

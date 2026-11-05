@@ -33,6 +33,7 @@ export interface BuildOptions {
 
 /** exercises per lesson, not counting the new-word intro cards */
 const TARGET = 20
+const MAX_EXERCISES = 25
 const REVIEW_SHARE = 0.3
 const MAX_GRAMMAR = 3
 const HARD_FROM_LESSON = 8
@@ -160,7 +161,11 @@ export function buildLesson(
   if (lesson.reading) tail.push({ kind: 'reading', itemId: lesson.reading.id, reading: lesson.reading })
 
   // every new word and sentence is practised at least once; review fills ~30%
-  const reviewCount = Math.min(pool.length, Math.round(TARGET * REVIEW_SHARE))
+  // big lessons give up some review so a lesson stays at most MAX_EXERCISES
+  const reviewCount = Math.max(
+    0,
+    Math.min(pool.length, Math.round(TARGET * REVIEW_SHARE), MAX_EXERCISES - current.length - tail.length),
+  )
   const practiceCount = Math.max(current.length, TARGET - reviewCount - tail.length)
 
   // practice items: alternate sentences and words, cycling until practiceCount is reached
