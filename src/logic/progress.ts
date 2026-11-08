@@ -6,6 +6,8 @@ export interface Settings {
   speechEnabled: boolean
   /** last opened learning path */
   path?: string
+  /** colour theme: blauw (default), groen, paars */
+  theme?: string
 }
 
 export interface Progress {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { checkAnswer, normalize } from '../../logic/normalize'
 import { SpeakButton } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 export function DialogueFill({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, { kind: 'dialogue' }>>) {
@@ -75,9 +76,11 @@ export function DialogueFill({ ex, locked, onResult }: ExerciseProps<Extract<Exe
         })}
       </div>
       {!locked && (
-        <button className="btn primary block" style={{ marginTop: 18 }} disabled={!allFilled} onClick={submit}>
-          Controleer
-        </button>
+        <ActionBar>
+          <button className="btn primary block" disabled={!allFilled} onClick={submit}>
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </div>
   )

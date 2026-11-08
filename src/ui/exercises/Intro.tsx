@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { SpeakButton, useSpeak } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 export function Intro({ ex, onResult }: ExerciseProps<Extract<Exercise, { kind: 'intro' }>>) {
@@ -28,9 +29,11 @@ export function Intro({ ex, onResult }: ExerciseProps<Extract<Exercise, { kind: 
           </div>
         )}
       </div>
-      <button className="btn primary block" onClick={() => onResult({ verdict: 'info' })}>
-        Begrepen
-      </button>
+      <ActionBar>
+        <button className="btn primary block" onClick={() => onResult({ verdict: 'info' })}>
+          Begrepen
+        </button>
+      </ActionBar>
     </div>
   )
 }

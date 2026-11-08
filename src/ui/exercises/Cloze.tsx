@@ -3,6 +3,7 @@ import { clozeVerses } from '../../logic/cloze'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { normalize } from '../../logic/normalize'
 import { SpeakButton } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 /** Bible passage with gaps; each gap is filled by choosing from the word bank */
@@ -67,9 +68,11 @@ export function Cloze({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
         ))}
       </div>
       {!locked && (
-        <button className="btn primary block" style={{ marginTop: 18 }} disabled={!allFilled} onClick={submit}>
-          Controleer
-        </button>
+        <ActionBar>
+          <button className="btn primary block" disabled={!allFilled} onClick={submit}>
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </div>
   )

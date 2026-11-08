@@ -3,6 +3,7 @@ import { emptyProgress, exportProgress, importProgress } from '../logic/progress
 import { recognitionSupported } from '../speech/recognition'
 import { getVoices, pickSpanishVoice, spainVoiceMissing, speak, spanishVoices, ttsSupported } from '../speech/tts'
 import { useProgress } from './SettingsContext'
+import { THEMES, themeById } from './themes'
 
 export function SettingsScreen() {
   const { progress, update } = useProgress()
@@ -49,6 +50,27 @@ export function SettingsScreen() {
   return (
     <main className="screen">
       <h1>Instellingen</h1>
+
+      <section className="card">
+        <h2>Kleur</h2>
+        <div className="theme-choices">
+          {THEMES.map((th) => {
+            const on = themeById(s.theme).id === th.id
+            return (
+              <button
+                key={th.id}
+                className={`theme-choice ${on ? 'on' : ''}`}
+                aria-pressed={on}
+                onClick={() => setSettings({ theme: th.id })}
+              >
+                <span className="swatch" style={{ background: th.gradient }} aria-hidden="true" />
+                <span className="theme-name">{th.name}</span>
+                <span className="theme-desc">{th.description}</span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
       <section className="card">
         <h2>Stem</h2>

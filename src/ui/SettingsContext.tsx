@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { allItemIds, allLessons } from '../content'
 import { loadProgress, pruneUnknown, saveProgress, type Progress } from '../logic/progress'
+import { applyTheme } from './themes'
 
 interface Ctx {
   progress: Progress
@@ -13,6 +14,7 @@ export function ProgressProvider(props: { children: ReactNode; initial?: Progres
   const [progress, setProgress] = useState<Progress>(
     () => props.initial ?? pruneUnknown(loadProgress(), allItemIds(), new Set(allLessons.map((l) => l.id))),
   )
+  useEffect(() => applyTheme(progress.settings.theme), [progress.settings.theme])
   const update = useCallback((fn: (p: Progress) => Progress) => {
     setProgress((prev) => {
       const next = fn(prev)

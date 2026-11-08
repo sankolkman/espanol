@@ -3,6 +3,7 @@ import { allLessons, lessonById, lessonsBefore, pathById, pathLessons, pathOf, s
 import type { Lesson } from '../content/types'
 import { buildLesson, buildReviewSession, toPoolItems, type Exercise } from '../logic/lessonBuilder'
 import { nextLessonId } from '../logic/progress'
+import { ActionBar } from './ActionBar'
 import { LessonRunner, type LessonSummary } from './LessonRunner'
 import { Markdown } from './markdown'
 import { lessonUnlocked } from './paths'
@@ -88,7 +89,7 @@ export function ReviewScreen({ pathId }: { pathId?: string }) {
 function LessonIntro({ lesson, pathId, onStart }: { lesson: Lesson; pathId: string; onStart(): void }) {
   const unit = unitOf(lesson.id)
   return (
-    <main className="screen">
+    <main className="screen has-action-bar">
       <a className="close" href={`#/pad/${pathId}`} aria-label="Terug">
         ←
       </a>
@@ -123,9 +124,11 @@ function LessonIntro({ lesson, pathId, onStart }: { lesson: Lesson; pathId: stri
           <Markdown text={lesson.grammar.explanation} />
         </section>
       )}
-      <button className="btn primary block" onClick={onStart}>
-        Start de les
-      </button>
+      <ActionBar>
+        <button className="btn primary block" onClick={onStart}>
+          Start de les
+        </button>
+      </ActionBar>
     </main>
   )
 }
@@ -147,7 +150,7 @@ function LessonDone(props: { summary: LessonSummary; nextId?: string | null; tit
   const { correct, total, weakItems } = props.summary
   const pct = total ? Math.round((correct / total) * 100) : 100
   return (
-    <main className="screen done-screen">
+    <main className="screen done-screen has-action-bar">
       <div className="big" aria-hidden="true">
         {pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪'}
       </div>
@@ -175,7 +178,7 @@ function LessonDone(props: { summary: LessonSummary; nextId?: string | null; tit
           </ul>
         </section>
       )}
-      <div className="hero-actions">
+      <ActionBar>
         {props.nextId && (
           <a className="btn primary" href={`#/les/${props.nextId}`}>
             Volgende les
@@ -184,7 +187,7 @@ function LessonDone(props: { summary: LessonSummary; nextId?: string | null; tit
         <a className="btn" href={`#/pad/${props.pathId}`}>
           Terug naar het pad
         </a>
-      </div>
+      </ActionBar>
     </main>
   )
 }

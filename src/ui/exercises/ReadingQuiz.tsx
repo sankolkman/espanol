@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { SpeakButton } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 export function ReadingQuiz({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, { kind: 'reading' }>>) {
@@ -54,9 +55,11 @@ export function ReadingQuiz({ ex, locked, onResult }: ExerciseProps<Extract<Exer
         </div>
       ))}
       {!locked && (
-        <button className="btn primary block" style={{ marginTop: 18 }} disabled={!allAnswered} onClick={submit}>
-          Controleer
-        </button>
+        <ActionBar>
+          <button className="btn primary block" disabled={!allAnswered} onClick={submit}>
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </div>
   )

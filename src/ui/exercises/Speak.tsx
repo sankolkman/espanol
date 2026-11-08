@@ -3,13 +3,15 @@ import type { Exercise } from '../../logic/lessonBuilder'
 import { matchSpeech } from '../../logic/speechMatch'
 import { listenOnce, stopListening } from '../../speech/recognition'
 import { useSession } from '../LessonRunner'
-import { SpeakButton } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
+import { SpeakButton, useSpeak } from '../SpeakButton'
 import type { ExerciseProps } from './types'
 
 const MAX_TRIES = 2
 
 export function Speak({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, { kind: 'speak' }>>) {
   const session = useSession()
+  const { say } = useSpeak()
   const [listening, setListening] = useState(false)
   const [fails, setFails] = useState(0)
   const [heard, setHeard] = useState<string | null>(null)
@@ -24,7 +26,7 @@ export function Speak({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
     setListening(false)
     if (r.ok) {
       if ([ex.es, ...(ex.altEs ?? [])].some((target) => matchSpeech(r.alternatives, target))) {
-        onResult({ verdict: 'correct', expected: ex.es })
+        onResult({ verdict: 'correct', expected: ex.es, given: r.alternatives[0], lang: 'es', audio: ex.es })
         return
       }
       setHeard(r.alternatives[0])
@@ -63,19 +65,26 @@ export function Speak({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
             {listening ? 'Ik luister…' : 'Tik op de microfoon en spreek de zin uit.'}
           </p>
           {heard && fails > 0 && (
-            <p className="notice">
+            <div className="notice">
               Ik hoorde: “{heard}”. {fails < MAX_TRIES ? 'Probeer het nog een keer.' : ''}
-            </p>
+              <div style={{ marginTop: 8 }}>
+                <button className="btn" onClick={() => say(ex.es)}>
+                  🔊 Voorbeeld
+                </button>
+              </div>
+            </div>
           )}
           {problem && <p className="notice">{problem}</p>}
-          {fails >= MAX_TRIES && (
-            <button className="btn primary block" onClick={() => onResult({ verdict: 'skipped' })}>
-              Ga verder
+          <ActionBar>
+            {fails >= MAX_TRIES && (
+              <button className="btn primary block" onClick={() => onResult({ verdict: 'skipped' })}>
+                Ga verder
+              </button>
+            )}
+            <button className="btn link block" onClick={cannotSpeak}>
+              Ik kan nu niet praten
             </button>
-          )}
-          <button className="btn link block" onClick={cannotSpeak}>
-            Ik kan nu niet praten
-          </button>
+          </ActionBar>
         </>
       )}
     </div>

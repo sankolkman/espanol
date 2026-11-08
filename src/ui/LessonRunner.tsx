@@ -15,6 +15,8 @@ import { Speak } from './exercises/Speak'
 import { TypeAnswer } from './exercises/TypeAnswer'
 import type { Outcome } from './exercises/types'
 import { useProgress } from './SettingsContext'
+import { AnswerReview } from './AnswerReview'
+import { useSpeak } from './SpeakButton'
 
 export interface LessonSummary {
   correct: number
@@ -157,10 +159,12 @@ function ExerciseView(props: { ex: Exercise; locked: boolean; onResult(o: Outcom
 }
 
 function Feedback(props: { outcome: Outcome; onNext(): void; onOverride(): void }) {
-  const { verdict, expected, canOverride } = props.outcome
+  const { verdict, expected, canOverride, given, accepted, lang, audio } = props.outcome
   const ref = useRef<HTMLButtonElement>(null)
   useEffect(() => ref.current?.focus(), [])
+  const { say } = useSpeak()
   const cls = verdict === 'correct' ? 'good' : 'bad'
+  const review = given !== undefined && expected !== undefined
   return (
     <div className={`feedback ${cls}`} role="status">
       <div className="feedback-inner">
@@ -168,8 +172,14 @@ function Feedback(props: { outcome: Outcome; onNext(): void; onOverride(): void 
         {verdict === 'wrong' && (
           <>
             <div className="verdict">Helaas, het juiste antwoord is:</div>
-            <strong>{expected}</strong>
+            {!review && <strong>{expected}</strong>}
           </>
+        )}
+        {review && <AnswerReview given={given} accepted={accepted ?? [expected]} lang={lang ?? 'es'} />}
+        {audio && ttsSupported() && (
+          <button className="btn" onClick={() => say(audio)}>
+            🔊 Voorbeeld
+          </button>
         )}
         <button ref={ref} className="btn primary block" onClick={props.onNext}>
           Verder

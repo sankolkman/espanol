@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { checkAnswer } from '../../logic/normalize'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 export function Build({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, { kind: 'build' }>>) {
@@ -35,17 +36,19 @@ export function Build({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
         ))}
       </div>
       {!locked && (
-        <button
-          className="btn primary block"
-          style={{ marginTop: 18 }}
-          disabled={chosen.length === 0}
-          onClick={() => {
-            const r = checkAnswer(chosen.map((i) => ex.tiles[i]).join(' '), [ex.answer])
-            onResult({ verdict: r.verdict, expected: ex.answer })
-          }}
-        >
-          Controleer
-        </button>
+        <ActionBar>
+          <button
+            className="btn primary block"
+            disabled={chosen.length === 0}
+            onClick={() => {
+              const given = chosen.map((i) => ex.tiles[i]).join(' ')
+              const r = checkAnswer(given, [ex.answer])
+              onResult({ verdict: r.verdict, expected: ex.answer, given, lang: 'es', audio: ex.answer })
+            }}
+          >
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </div>
   )

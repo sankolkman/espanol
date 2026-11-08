@@ -1,17 +1,13 @@
 import { useMemo, useState } from 'react'
-import { allWords, lessonById, pathOf } from '../content'
-import { chapterVerses, commonWords } from '../content/bible'
-import { buildGlossary, lookupWord, tokenize, type GlossEntry } from '../logic/glossary'
+import { lessonById, pathOf } from '../content'
+import { chapterVerses } from '../content/bible'
+import { lookupWord, tokenize, type GlossEntry } from '../logic/glossary'
+import { ActionBar } from './ActionBar'
+import { appGlossary as glossary } from './glossary'
 import { lessonUnlocked } from './paths'
 import { useProgress } from './SettingsContext'
 import { SpeakButton } from './SpeakButton'
 
-let glossaryCache: ReturnType<typeof buildGlossary> | null = null
-/** Bible lesson words first, then the holiday words, then common small words */
-function glossary() {
-  glossaryCache ??= buildGlossary([...allWords('bijbel'), ...allWords('vakantie'), ...commonWords])
-  return glossaryCache
-}
 
 export function ReaderScreen({ lessonId }: { lessonId: string }) {
   const { progress } = useProgress()
@@ -36,7 +32,7 @@ export function ReaderScreen({ lessonId }: { lessonId: string }) {
 
   const c = lesson.chapter
   return (
-    <main className="screen reader">
+    <main className="screen reader has-action-bar">
       <a className="close" href={`#/les/${lesson.id}`} aria-label="Terug naar de les">
         ←
       </a>
@@ -67,9 +63,11 @@ export function ReaderScreen({ lessonId }: { lessonId: string }) {
           </p>
         ))}
       </div>
-      <a className="btn primary block" href={`#/les/${lesson.id}`}>
-        Naar de les
-      </a>
+      <ActionBar>
+        <a className="btn primary block" href={`#/les/${lesson.id}`}>
+          Naar de les
+        </a>
+      </ActionBar>
       <p className="attribution">{pathOf(lessonId).attribution}</p>
 
       {picked && (

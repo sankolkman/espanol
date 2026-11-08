@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Exercise } from '../../logic/lessonBuilder'
 import { SpeakButton } from '../SpeakButton'
+import { ActionBar } from '../ActionBar'
 import type { ExerciseProps } from './types'
 
 export function Choice({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, { kind: 'choice' }>>) {
@@ -23,14 +24,23 @@ export function Choice({ ex, locked, onResult }: ExerciseProps<Extract<Exercise,
         })}
       </div>
       {!locked && (
-        <button
-          className="btn primary block"
-          style={{ marginTop: 18 }}
-          disabled={!picked}
-          onClick={() => onResult({ verdict: picked === ex.answer ? 'correct' : 'wrong', expected: ex.answer })}
-        >
-          Controleer
-        </button>
+        <ActionBar>
+          <button
+            className="btn primary block"
+            disabled={!picked}
+            onClick={() =>
+              onResult({
+                verdict: picked === ex.answer ? 'correct' : 'wrong',
+                expected: ex.answer,
+                given: picked!,
+                lang: ex.promptLang === 'es' ? 'nl' : 'es',
+                audio: ex.promptLang === 'es' ? ex.prompt : ex.answer,
+              })
+            }
+          >
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { checkAnswer, normalize } from '../../logic/normalize'
+import { ActionBar } from '../ActionBar'
 import type { Outcome } from './types'
 
 /** shared text input + Controleer button for typed answers */
@@ -9,6 +10,8 @@ export function TextAnswer(props: {
   onResult(o: Outcome): void
   placeholder?: string
   lang?: 'es' | 'nl'
+  /** Spanish text for the Voorbeeld button (default: the expected answer when it is Spanish) */
+  audio?: string
   children?: ReactNode
 }) {
   const [value, setValue] = useState('')
@@ -18,7 +21,16 @@ export function TextAnswer(props: {
   const submit = () => {
     if (empty || props.locked) return
     const r = checkAnswer(value, props.accepted, { articleOptional: props.lang === 'nl' })
-    props.onResult({ verdict: r.verdict, expected: r.expected, canOverride: true })
+    const lang = props.lang ?? 'es'
+    props.onResult({
+      verdict: r.verdict,
+      expected: r.expected,
+      canOverride: true,
+      given: value,
+      accepted: props.accepted,
+      lang,
+      audio: props.audio ?? (lang === 'es' ? r.expected : undefined),
+    })
   }
   return (
     <form
@@ -42,9 +54,11 @@ export function TextAnswer(props: {
         onChange={(e) => setValue(e.target.value)}
       />
       {!props.locked && (
-        <button type="submit" className="btn primary block" style={{ marginTop: 18 }} disabled={empty}>
-          Controleer
-        </button>
+        <ActionBar>
+          <button type="submit" className="btn primary block" disabled={empty}>
+            Controleer
+          </button>
+        </ActionBar>
       )}
     </form>
   )

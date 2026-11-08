@@ -8,7 +8,8 @@ export type Exercise =
   | { kind: 'choice'; itemId: string; prompt: string; promptLang: 'es' | 'nl'; options: string[]; answer: string }
   | { kind: 'type'; itemId: string; prompt: string; promptLang: 'es' | 'nl'; accepted: string[] }
   | { kind: 'build'; itemId: string; promptNl: string; tiles: string[]; answer: string }
-  | { kind: 'listen'; itemId: string; es: string; accepted: string[] }
+  /** gap: long sentences show the text with one word left out; only that word is typed */
+  | { kind: 'listen'; itemId: string; es: string; accepted: string[]; gap?: { before: string; after: string } }
   | { kind: 'speak'; itemId: string; es: string; nl: string; altEs?: string[] }
   | { kind: 'grammar'; itemId: string; prompt: string; nl?: string; accepted: string[] }
   | { kind: 'dialogue'; itemId: string; dialogue: Dialogue }
@@ -45,7 +46,9 @@ const WORD_FORMS_HARD: Form[] = ['type-nl', 'speak', 'type-es', 'listen', 'choic
 const SENTENCE_FORMS: Form[] = ['build', 'choice-es', 'listen', 'type-nl', 'speak']
 const SENTENCE_FORMS_HARD: Form[] = ['type-nl', 'speak', 'build', 'listen', 'type-nl']
 /** long sentences (Bible verses): recognise and say them, don't type or build them */
-const LONG_SENTENCE_FORMS: Form[] = ['choice-es', 'speak', 'choice-nl']
+const LONG_SENTENCE_FORMS: Form[] = ['choice-es', 'listen', 'speak', 'choice-nl']
+/** from this many words on, listening asks for one missing word instead of the whole sentence */
+const LISTEN_GAP_WORDS = 6
 const LONG_SENTENCE_WORDS = 9
 const CLOZE_DISTRACTORS = 2
 
@@ -101,7 +104,7 @@ function makeExercise(
     case 'type-es':
       return { kind: 'type', itemId: item.id, prompt: item.es, promptLang: 'es', accepted: [item.nl, ...(item.altNl ?? [])] }
     case 'listen':
-      return { kind: 'listen', itemId: item.id, es: item.es, accepted: accEs }
+      return listenExercise(item, accEs, rng)
     case 'speak':
       return { kind: 'speak', itemId: item.id, es: item.es, nl: item.nl, ...(item.altEs ? { altEs: item.altEs } : {}) }
     case 'build': {
@@ -241,4 +244,20 @@ export function clozeExercise(lesson: Lesson, rng: () => number): Exercise {
     rng,
   ).slice(0, CLOZE_DISTRACTORS)
   return { kind: 'cloze', itemId: p.id, passage: p, bank: shuffle([...new Set(p.gaps), ...distractors], rng) }
+}
+
+/** listening: short items are typed in full; long sentences show the text with one word left out */
+function listenExercise(item: ReviewPoolItem, accepted: string[], rng: () => number): Exercise {
+  const words = Array.from(item.es.matchAll(/[\p{L}\p{N}]+/gu), (m) => ({ text: m[0], at: m.index! }))
+  if (item.isWord || words.length < LISTEN_GAP_WORDS) return { kind: 'listen', itemId: item.id, es: item.es, accepted }
+  const longer = words.filter((w) => w.text.length >= 4)
+  const pool = longer.length ? longer : words.filter((w) => w.text.length >= 3)
+  const pick = pool[Math.floor(rng() * pool.length)]
+  return {
+    kind: 'listen',
+    itemId: item.id,
+    es: item.es,
+    accepted: [pick.text],
+    gap: { before: item.es.slice(0, pick.at), after: item.es.slice(pick.at + pick.text.length) },
+  }
 }

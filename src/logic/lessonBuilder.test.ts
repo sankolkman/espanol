@@ -268,11 +268,46 @@ describe('Bible lessons', () => {
     expect(new Set(c.bank).size).toBe(5)
   })
 
-  it('never asks to type, build or dictate a long verse', () => {
+  it('never asks to type or build a long verse; listening only with one word left out', () => {
     for (let seed = 1; seed <= 30; seed++) {
       for (const e of buildLesson(bible, [], {}, { ...opts, seed })) {
-        if (e.itemId === 'bs1') expect(['choice', 'speak']).toContain(e.kind)
+        if (e.itemId !== 'bs1') continue
+        expect(['choice', 'speak', 'listen']).toContain(e.kind)
+        if (e.kind === 'listen') expect(e.gap).toBeDefined()
       }
     }
+  })
+})
+
+describe('listening to long sentences', () => {
+  const verse = 'Dios amó tanto al mundo que dio a su Hijo Unigénito.'
+  const lessonWithVerse: Lesson = {
+    ...lesson,
+    id: 'LV',
+    sentences: [
+      { id: 'lv1', es: verse, nl: 'God had de wereld zo lief…' },
+      { id: 'lv2', es: 'Dios es amor.', nl: 'God is liefde.' },
+    ],
+  }
+  const listens = (seedMax = 60) =>
+    Array.from({ length: seedMax }, (_, seed) => buildLesson(lessonWithVerse, [], {}, { ...opts, seed })).flat()
+
+  it('long sentences are listened to with one word left out', () => {
+    const gapped = listens().filter((e) => e.kind === 'listen' && e.itemId === 'lv1')
+    expect(gapped.length).toBeGreaterThan(0)
+    for (const e of gapped) {
+      if (e.kind !== 'listen') continue
+      expect(e.gap).toBeDefined()
+      const { before, after } = e.gap!
+      expect(e.accepted).toHaveLength(1)
+      expect(e.accepted[0].split(' ')).toHaveLength(1)
+      expect(`${before}${e.accepted[0]}${after}`).toBe(verse)
+      expect(e.accepted[0].replace(/[^\p{L}]/gu, '').length).toBeGreaterThanOrEqual(3)
+      expect(e.es).toBe(verse)
+    }
+  })
+
+  it('short sentences are typed in full', () => {
+    for (const e of listens()) if (e.kind === 'listen' && e.itemId === 'lv2') expect(e.gap).toBeUndefined()
   })
 })

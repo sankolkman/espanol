@@ -45,7 +45,7 @@ describe('LessonRunner', () => {
     const { user, onFinish } = setup([typeGracias])
     await user.type(input(), 'grazias')
     await user.click(check())
-    expect(screen.getByText('gracias')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'gracias' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Ik had het goed' }))
     expect(onFinish).toHaveBeenCalledTimes(1)
     expect(onFinish).toHaveBeenCalledWith({ correct: 1, total: 1, weakItems: [] })
@@ -237,5 +237,139 @@ describe('cloze exercise', () => {
     await user.selectOptions(screen.getByRole('combobox', { name: 'Ontbrekend woord 2' }), 'pan')
     await user.click(check())
     expect(screen.getByText('reino · pan')).toBeInTheDocument()
+  })
+})
+
+describe('answer review and bottom actions', () => {
+  it('puts the main actions in the bottom bar', () => {
+    setup([{ kind: 'intro', itemId: 'w', word: { id: 'w', es: 'hola', nl: 'hallo' } }])
+    expect(screen.getByRole('button', { name: 'Begrepen' }).closest('.action-bar')).not.toBeNull()
+  })
+
+  it('puts Controleer in the bottom bar', () => {
+    setup([typeGracias])
+    expect(check().closest('.action-bar')).not.toBeNull()
+  })
+
+  it('shows the answer word by word with an explanation of the mistake', async () => {
+    const { user } = setup([{ kind: 'type', itemId: 's', prompt: 'een biertje', promptLang: 'nl', accepted: ['una cerveza'] }])
+    await user.type(input(), 'una servesa')
+    await user.click(check())
+    const word = screen.getByRole('button', { name: 'cerveza' })
+    expect(word).toHaveClass('spelling')
+    expect(screen.getByRole('note')).toHaveTextContent('Spelfout')
+    await user.click(screen.getByRole('button', { name: 'una' }))
+    expect(screen.getByRole('note')).toHaveTextContent('Goed.')
+  })
+
+  it('shows a verb table for a wrong verb form', async () => {
+    const { user } = setup([{ kind: 'type', itemId: 'v', prompt: 'jij wilt', promptLang: 'nl', accepted: ['quieres'] }])
+    await user.type(input(), 'quiero')
+    await user.click(check())
+    const note = screen.getByRole('note')
+    expect(note).toHaveTextContent('querer')
+    const table = note.querySelector('table')!
+    expect(table).toHaveTextContent('quieres')
+    expect(table.querySelector('td.is-expected')).toHaveTextContent('quieres')
+    expect(table.querySelector('td.is-given')).toHaveTextContent('quiero')
+  })
+})
+
+class HearingRecognition {
+  lang = ''
+  maxAlternatives = 1
+  interimResults = false
+  onresult: ((e: unknown) => void) | null = null
+  onerror = null
+  onend: (() => void) | null = null
+  start() {
+    queueMicrotask(() => {
+      this.onresult?.({ results: [Object.assign([{ transcript: 'hola' }], { isFinal: true })] })
+      this.onend?.()
+    })
+  }
+  abort() {}
+}
+
+describe('example audio at the check', () => {
+  const g = globalThis as Record<string, unknown>
+  const spoken: string[] = []
+  beforeEach(() => {
+    spoken.length = 0
+    g.speechSynthesis = { cancel() {}, speak: (u: { text: string }) => spoken.push(u.text), getVoices: () => [], addEventListener() {}, removeEventListener() {} }
+    g.SpeechSynthesisUtterance = class {
+      text: string
+      constructor(text: string) {
+        this.text = text
+      }
+    }
+    g.webkitSpeechRecognition = HearingRecognition
+  })
+  afterEach(() => {
+    delete g.speechSynthesis
+    delete g.SpeechSynthesisUtterance
+    delete g.webkitSpeechRecognition
+  })
+
+  it('offers an example button after a spoken answer', async () => {
+    const onFinish = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <ProgressProvider initial={emptyProgress()}>
+        <LessonRunner exercises={[{ kind: 'speak', itemId: 'h', es: 'Hola', nl: 'Hallo' }]} onFinish={onFinish} onClose={() => {}} />
+      </ProgressProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: 'Start opnemen' }))
+    const example = await screen.findByRole('button', { name: /Voorbeeld/ })
+    spoken.length = 0
+    await user.click(example)
+    expect(spoken).toEqual(['Hola'])
+  })
+})
+
+describe('listening with a gap', () => {
+  const g = globalThis as Record<string, unknown>
+  const spoken: string[] = []
+  beforeEach(() => {
+    spoken.length = 0
+    g.speechSynthesis = { cancel() {}, speak: (u: { text: string }) => spoken.push(u.text), getVoices: () => [], addEventListener() {}, removeEventListener() {} }
+    g.SpeechSynthesisUtterance = class {
+      text: string
+      constructor(text: string) {
+        this.text = text
+      }
+    }
+  })
+  afterEach(() => {
+    delete g.speechSynthesis
+    delete g.SpeechSynthesisUtterance
+  })
+
+  const ex: Exercise = {
+    kind: 'listen',
+    itemId: 'jn316',
+    es: 'Dios amó tanto al mundo que dio a su Hijo.',
+    accepted: ['mundo'],
+    gap: { before: 'Dios amó tanto al ', after: ' que dio a su Hijo.' },
+  }
+
+  it('shows the sentence with one gap and checks only that word', async () => {
+    const onFinish = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <ProgressProvider initial={emptyProgress()}>
+        <LessonRunner exercises={[ex]} onFinish={onFinish} onClose={() => {}} />
+      </ProgressProvider>,
+    )
+    expect(screen.getByText(/Dios amó tanto al/)).toBeInTheDocument()
+    expect(screen.getByText(/que dio a su Hijo/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Alleen het ontbrekende woord/ }))
+    expect(spoken.at(-1)).toBe('mundo')
+    await user.type(screen.getByRole('textbox'), 'mundo')
+    await user.click(screen.getByRole('button', { name: 'Controleer' }))
+    await user.click(screen.getByRole('button', { name: /Voorbeeld/ }))
+    expect(spoken.at(-1)).toBe('Dios amó tanto al mundo que dio a su Hijo.')
+    await user.click(screen.getByRole('button', { name: 'Verder' }))
+    expect(onFinish).toHaveBeenCalledWith({ correct: 1, total: 1, weakItems: [] })
   })
 })

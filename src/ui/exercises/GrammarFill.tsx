@@ -15,7 +15,14 @@ export function GrammarFill({ ex, locked, onResult }: ExerciseProps<Extract<Exer
         </span>
       </div>
       {ex.nl && <p className="muted">{ex.nl}</p>}
-      <TextAnswer accepted={ex.accepted} locked={locked} onResult={onResult} lang="es" placeholder="Ontbrekend woord" />
+      <TextAnswer
+        accepted={ex.accepted}
+        locked={locked}
+        onResult={onResult}
+        lang="es"
+        placeholder="Ontbrekend woord"
+        audio={ex.prompt.replace('___', ex.accepted[0])}
+      />
     </div>
   )
 }
