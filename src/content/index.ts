@@ -1,4 +1,5 @@
 import { bibleUnits, BIBLE_ATTRIBUTION } from './bible'
+import { musicUnit } from './music'
 import type { Lesson, Path, Unit, Word } from './types'
 import { unit1 } from './unit1'
 import { unit2 } from './unit2'
@@ -18,6 +19,14 @@ export const paths: Path[] = [
     subtitle: 'Het Nieuwe Testament lezen',
     units: bibleUnits,
     attribution: BIBLE_ATTRIBUTION,
+  },
+  {
+    id: 'muziek',
+    title: 'Muziek',
+    subtitle: 'Spaans met christelijke liederen',
+    units: [musicUnit],
+    attribution:
+      'De liedteksten zelf staan niet in de app (auteursrecht). De lessen leren je de woorden die je in de liederen hoort; de voorbeeldzinnen zijn speciaal voor deze app geschreven.',
   },
 ]
 

@@ -42,6 +42,9 @@ export interface SpeechState {
 export function adapt(ex: Exercise, s: SpeechState): Exercise | null {
   if (ex.kind === 'listen') return s.speech && !s.noListen && ttsSupported() ? ex : null
   if (ex.kind === 'speak' && (!s.speech || s.noSpeak || !recognitionSupported())) {
+    if (ex.context) {
+      return { kind: 'type', itemId: ex.itemId, prompt: ex.nl, promptLang: 'nl', accepted: [ex.es], gap: ex.context }
+    }
     return { kind: 'type', itemId: ex.itemId, prompt: ex.nl, promptLang: 'nl', accepted: [ex.es, ...(ex.altEs ?? [])] }
   }
   return ex
@@ -177,9 +180,14 @@ function Feedback(props: { outcome: Outcome; onNext(): void; onOverride(): void 
         )}
         {review && <AnswerReview given={given} accepted={accepted ?? [expected]} lang={lang ?? 'es'} />}
         {audio && ttsSupported() && (
-          <button className="btn" onClick={() => say(audio)}>
-            🔊 Voorbeeld
-          </button>
+          <div className="row">
+            <button className="btn" onClick={() => say(audio)}>
+              🔊 Voorbeeld
+            </button>
+            <button className="btn" onClick={() => say(audio, true)} aria-label="Langzaam voorbeeld">
+              🐢 Langzaam
+            </button>
+          </div>
         )}
         <button ref={ref} className="btn primary block" onClick={props.onNext}>
           Verder

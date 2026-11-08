@@ -16,7 +16,7 @@ export function PathScreen(props: { pathId?: string }) {
     <main className="screen">
       <PathTabs current={path.id} hrefFor={(id) => `#/pad/${id}`} />
       <header className={`hero hero-${path.id}`}>
-        <p className="eyebrow">{path.id === 'bijbel' ? 'Palabra de Dios' : '¡Hola!'}</p>
+        <p className="eyebrow">{path.id === 'bijbel' ? 'Palabra de Dios' : path.id === 'muziek' ? '¡A cantar!' : '¡Hola!'}</p>
         <h1>{path.subtitle}</h1>
         <p className="muted">
           {done.length} van {ids.length} lessen afgerond
@@ -41,6 +41,12 @@ export function PathScreen(props: { pathId?: string }) {
         </div>
       </header>
 
+      {path.id === 'muziek' && (
+        <a className="card own-songs" href="#/liedjes">
+          <strong>🎵 Eigen songteksten</strong>
+          <span className="muted small">Plak een tekst die je hebt en oefen met de unieke regels. Blijft alleen in deze browser.</span>
+        </a>
+      )}
       <ol className="path">
         {path.units.map((unit, ui) => (
           <li key={unit.id} className="unit">

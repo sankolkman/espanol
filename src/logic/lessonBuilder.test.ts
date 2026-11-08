@@ -311,3 +311,46 @@ describe('listening to long sentences', () => {
     for (const e of listens()) if (e.kind === 'listen' && e.itemId === 'lv2') expect(e.gap).toBeUndefined()
   })
 })
+
+describe('never more than six words to type or say', () => {
+  const long = 'Dios amó tanto al mundo que dio a su Hijo Unigénito.'
+  const l: Lesson = {
+    ...lesson,
+    id: 'L6',
+    sentences: [
+      { id: 'x1', es: long, nl: 'God had de wereld zo lief dat Hij zijn enige Zoon gaf.' },
+      { id: 'x2', es: 'Un hombre bajaba de Jerusalén a Jericó.', nl: 'Een man ging van Jeruzalem naar Jericho.' },
+      { id: 'x3', es: 'Dios es amor.', nl: 'God is liefde.' },
+    ],
+  }
+  const all = Array.from({ length: 80 }, (_, seed) => buildLesson(l, [], {}, { ...opts, seed })).flat()
+
+  it('speaking a long sentence asks for one part of at most 6 words, shown in context', () => {
+    const speaks = all.filter((e) => e.kind === 'speak' && e.itemId === 'x1')
+    expect(speaks.length).toBeGreaterThan(0)
+    for (const e of speaks) {
+      if (e.kind !== 'speak') continue
+      expect(e.es.split(/\s+/).length).toBeLessThanOrEqual(6)
+      expect(e.context).toBeDefined()
+      expect(`${e.context!.before}${e.es}${e.context!.after}`).toBe(long)
+    }
+  })
+
+  it('typing a long sentence into Spanish asks for a part of at most 4 words, shown in context', () => {
+    const types = all.filter((e) => e.kind === 'type' && e.promptLang === 'nl' && (e.itemId === 'x1' || e.itemId === 'x2'))
+    expect(types.length).toBeGreaterThan(0)
+    for (const e of types) {
+      if (e.kind !== 'type') continue
+      expect(e.accepted[0].split(/\s+/).length).toBeLessThanOrEqual(4)
+      expect(e.gap).toBeDefined()
+    }
+  })
+
+  it('short sentences are still typed and said in full', () => {
+    for (const e of all) {
+      if (e.itemId !== 'x3') continue
+      if (e.kind === 'speak') expect(e.context).toBeUndefined()
+      if (e.kind === 'type') expect(e.gap).toBeUndefined()
+    }
+  })
+})

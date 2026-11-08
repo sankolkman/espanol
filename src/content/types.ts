@@ -91,6 +91,8 @@ export interface Lesson {
   reading?: Reading
   passage?: Passage
   chapter?: ChapterRead
+  /** music path: the song this lesson prepares for (no lyrics, only a search link) */
+  song?: { title: string; query: string }
 }
 
 export interface Unit {

@@ -11,6 +11,8 @@ Er zijn twee leerpaden, met tabbladen bovenaan om te wisselen:
   3. *Marcus*: alle 16 hoofdstukken, met een leesscherm waarin je op een woord tikt voor de vertaling
 
   Per les leer je eerst nieuwe woorden, daarna vertaal je verzen en vul je ontbrekende woorden in uit een rijtje.
+- **Muziek**: 8 lessen bij christelijke liederen (Océanos, Holy Forever, La bondad de Dios, Hermoso Nombre, Way Maker, Gracia Sublime Es, Cuán Grande Es Él, Grande es el Señor). Je leert de woorden die je in het lied hoort, met voorbeeldzinnen die voor deze app zijn geschreven. De liedteksten zelf staan niet in de app vanwege auteursrecht.
+  Met **Eigen songteksten** plak je zelf een tekst die je hebt; de app haalt herhaalde regels en kopjes als "Coro" eruit en maakt oefeningen van de unieke regels. Zo'n tekst blijft alleen in je eigen browser.
 
 - Geen account en geen server: je voortgang staat in je browser
 

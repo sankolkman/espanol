@@ -164,3 +164,37 @@ describe('short well-known sayings in phase 1 and 2', () => {
     },
   )
 })
+
+describe('no exercise asks to type or say more than six words', () => {
+  it.each(allLessons.map((l) => [l.id, l] as const))('%s', async (_id, lesson) => {
+    const { buildLesson } = await import('../logic/lessonBuilder')
+    const words = (s: string) => s.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length
+    for (let seed = 1; seed <= 12; seed++) {
+      for (const e of buildLesson(lesson, lessonsBefore(lesson.id), {}, { speech: true, seed, now: 0 })) {
+        if (e.kind === 'type' && e.promptLang === 'nl') expect(words(e.accepted[0])).toBeLessThanOrEqual(6)
+        if (e.kind === 'listen') expect(words(e.accepted[0])).toBeLessThanOrEqual(6)
+        if (e.kind === 'speak') expect(words(e.es)).toBeLessThanOrEqual(6)
+      }
+    }
+  })
+})
+
+describe('music path content', () => {
+  const music = pathLessons('muziek')
+  it('has one lesson per song', () => {
+    expect(music.map((l) => l.song?.title)).toEqual([
+      'Océanos',
+      'Holy Forever',
+      'La bondad de Dios',
+      'Hermoso Nombre',
+      'Way Maker (Abres Camino)',
+      'Gracia Sublime Es',
+      'Cuán Grande Es Él',
+      'Grande es el Señor',
+    ])
+  })
+  it.each(music.map((l) => [l.id, l] as const))('%s: own short sentences only (max 6 words)', (_id, l) => {
+    for (const s of l.sentences) expect(s.es.split(/\s+/).length).toBeLessThanOrEqual(6)
+    expect(l.song!.query.length).toBeGreaterThan(3)
+  })
+})

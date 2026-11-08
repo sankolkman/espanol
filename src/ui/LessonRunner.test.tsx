@@ -324,6 +324,8 @@ describe('example audio at the check', () => {
     spoken.length = 0
     await user.click(example)
     expect(spoken).toEqual(['Hola'])
+    await user.click(screen.getByRole('button', { name: /Langzaam/ }))
+    expect(spoken).toEqual(['Hola', 'Hola'])
   })
 })
 
@@ -371,5 +373,108 @@ describe('listening with a gap', () => {
     expect(spoken.at(-1)).toBe('Dios amó tanto al mundo que dio a su Hijo.')
     await user.click(screen.getByRole('button', { name: 'Verder' }))
     expect(onFinish).toHaveBeenCalledWith({ correct: 1, total: 1, weakItems: [] })
+  })
+})
+
+describe('parts of long sentences', () => {
+  it('typing shows the Spanish sentence with a gap and checks only the part', async () => {
+    const { user, onFinish } = setup([
+      {
+        kind: 'type',
+        itemId: 'p1',
+        prompt: 'Een man ging van Jeruzalem naar Jericho.',
+        promptLang: 'nl',
+        accepted: ['de Jerusalén'],
+        gap: { before: 'Un hombre bajaba ', after: ' a Jericó.' },
+      },
+    ])
+    expect(screen.getByText(/Un hombre bajaba/)).toBeInTheDocument()
+    expect(screen.getByText(/a Jericó/)).toBeInTheDocument()
+    await user.type(input(), 'de jerusalen')
+    await user.click(check())
+    await user.click(next())
+    expect(onFinish).toHaveBeenCalledWith({ correct: 1, total: 1, weakItems: [] })
+  })
+
+  it('speaking a part becomes typing that part when there is no microphone', () => {
+    const r = adapt(
+      { kind: 'speak', itemId: 's', es: 'para que todo el que cree', nl: 'zodat ieder die gelooft', context: { before: 'Dios… ', after: ' en Él.' } },
+      { speech: true, noSpeak: true },
+    )
+    expect(r).toEqual({
+      kind: 'type',
+      itemId: 's',
+      prompt: 'zodat ieder die gelooft',
+      promptLang: 'nl',
+      accepted: ['para que todo el que cree'],
+      gap: { before: 'Dios… ', after: ' en Él.' },
+    })
+  })
+})
+
+describe('speaking a part of a long sentence', () => {
+  const g = globalThis as Record<string, unknown>
+  beforeEach(() => {
+    g.speechSynthesis = { cancel() {}, speak() {}, getVoices: () => [], addEventListener() {}, removeEventListener() {} }
+    g.SpeechSynthesisUtterance = class {}
+    g.webkitSpeechRecognition = class {
+      start() {}
+      abort() {}
+    }
+  })
+  afterEach(() => {
+    delete g.speechSynthesis
+    delete g.SpeechSynthesisUtterance
+    delete g.webkitSpeechRecognition
+  })
+
+  it('shows the whole sentence with the part to say highlighted', () => {
+    render(
+      <ProgressProvider initial={emptyProgress()}>
+        <LessonRunner
+          exercises={[
+            {
+              kind: 'speak',
+              itemId: 'sp',
+              es: 'que dio a su Hijo',
+              nl: 'God had de wereld zo lief dat Hij zijn Zoon gaf.',
+              context: { before: 'Dios amó tanto al mundo ', after: ' Unigénito.' },
+            },
+          ]}
+          onFinish={() => {}}
+          onClose={() => {}}
+        />
+      </ProgressProvider>,
+    )
+    expect(screen.getByText('Zeg het gemarkeerde deel hardop')).toBeInTheDocument()
+    expect(document.querySelector('mark')).toHaveTextContent('que dio a su Hijo')
+    expect(screen.getByText(/Dios amó tanto al mundo/)).toBeInTheDocument()
+  })
+})
+
+describe('translations in the explanation', () => {
+  it('a spelling mistake also gives the meaning of the word', async () => {
+    const { user } = setup([{ kind: 'type', itemId: 't1', prompt: 'een biertje', promptLang: 'nl', accepted: ['una cerveza'] }])
+    await user.type(input(), 'una servesa')
+    await user.click(check())
+    const note = screen.getByRole('note')
+    expect(note).toHaveTextContent('Spelfout')
+    expect(note).toHaveTextContent('het bier')
+  })
+
+  it('a wrong verb form gives the meaning of the verb', async () => {
+    const { user } = setup([{ kind: 'type', itemId: 't2', prompt: 'jij wilt', promptLang: 'nl', accepted: ['quieres'] }])
+    await user.type(input(), 'quiero')
+    await user.click(check())
+    expect(screen.getByRole('note')).toHaveTextContent(/querer.*willen/)
+  })
+
+  it('a wrong word also says what your word means', async () => {
+    const { user } = setup([{ kind: 'type', itemId: 't3', prompt: 'een biertje', promptLang: 'nl', accepted: ['una cerveza'] }])
+    await user.type(input(), 'una mesa')
+    await user.click(check())
+    const note = screen.getByRole('note')
+    expect(note).toHaveTextContent('het bier')
+    expect(note).toHaveTextContent('de tafel')
   })
 })

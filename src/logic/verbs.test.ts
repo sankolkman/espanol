@@ -54,3 +54,12 @@ describe('findVerbForms', () => {
     expect(findVerbForms('mesa')).toEqual([])
   })
 })
+
+describe('verbMeaning', () => {
+  it('gives a Dutch meaning for every known verb', async () => {
+    const { verbMeaning, knownVerbs } = await import('./verbs')
+    expect(verbMeaning('querer')).toBe('willen')
+    expect(verbMeaning('llamarse')).toBe('heten')
+    for (const v of knownVerbs()) expect(verbMeaning(v), v).toBeTruthy()
+  })
+})

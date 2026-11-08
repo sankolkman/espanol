@@ -276,3 +276,42 @@ export function findVerbForms(word: string): VerbForm[] {
   const w = word.toLowerCase().trim()
   return index.get(w) ?? index.get('~' + bare(w)) ?? []
 }
+
+/** Dutch meaning of every verb the app can conjugate */
+const MEANINGS: Record<string, string> = {
+  ser: 'zijn', estar: 'zijn (plaats, toestand)', ir: 'gaan', tener: 'hebben', querer: 'willen', poder: 'kunnen, mogen',
+  hacer: 'doen, maken', decir: 'zeggen', venir: 'komen', ver: 'zien', dar: 'geven', saber: 'weten',
+  haber: 'hebben (hulpwerkwoord); er is', oír: 'horen', salir: 'weggaan, vertrekken', poner: 'zetten, leggen',
+  traer: 'brengen', caer: 'vallen', andar: 'lopen', morir: 'sterven', dormir: 'slapen', seguir: 'volgen',
+  pedir: 'vragen, bestellen', servir: 'dienen', impedir: 'tegenhouden', huir: 'vluchten', bendecir: 'zegenen',
+  nacer: 'geboren worden', aparecer: 'verschijnen', conocer: 'kennen', crecer: 'groeien', recoger: 'verzamelen',
+  consolar: 'troosten', encontrar: 'vinden', recordar: 'herinneren', contar: 'tellen, vertellen', volver: 'terugkomen',
+  doler: 'pijn doen', sembrar: 'zaaien', negar: 'ontkennen', pensar: 'denken', cerrar: 'sluiten',
+  despertar: 'wakker maken', entender: 'begrijpen', empezar: 'beginnen',
+  hablar: 'spreken, praten', tomar: 'nemen, drinken', pagar: 'betalen', cenar: 'avondeten', visitar: 'bezoeken',
+  necesitar: 'nodig hebben', llamar: 'roepen, bellen, noemen', llamarse: 'heten', amar: 'liefhebben',
+  perdonar: 'vergeven', bajar: 'naar beneden gaan', llegar: 'aankomen', llevar: 'brengen, dragen', mandar: 'sturen, bevelen',
+  hallar: 'vinden', heredar: 'erven', pasar: 'voorbijgaan, gebeuren', viajar: 'reizen', cuidar: 'zorgen voor',
+  levantarse: 'opstaan', acercarse: 'naderbij komen', llenarse: 'vol raken', buscar: 'zoeken',
+  resucitar: 'opstaan uit de dood', crucificar: 'kruisigen', regresar: 'teruggaan', pecar: 'zondigen',
+  entrar: 'binnengaan', preguntar: 'vragen', llorar: 'huilen', gritar: 'schreeuwen', caminar: 'lopen, wandelen',
+  tocar: 'aanraken, spelen', suspirar: 'zuchten', mirar: 'kijken', echar: 'werpen, gooien', dejar: 'laten, achterlaten',
+  proclamar: 'verkondigen', bautizar: 'dopen', salvar: 'redden', observar: 'kijken naar', ganar: 'winnen, verdienen',
+  cortar: 'snijden', exclamar: 'uitroepen', desamparar: 'verlaten', expirar: 'sterven', alarmarse: 'schrikken',
+  informar: 'vertellen, melden', predicar: 'prediken', orar: 'bidden', trabajar: 'werken', esperar: 'wachten, hopen',
+  cumplirse: 'vervuld worden', significar: 'betekenen', gustar: 'bevallen, lekker vinden', indignarse: 'boos worden',
+  cantar: 'zingen', comprar: 'kopen', estudiar: 'studeren', escuchar: 'luisteren', reservar: 'reserveren',
+  usar: 'gebruiken', enseñar: 'onderwijzen, laten zien', lavar: 'wassen', mostrar: 'tonen',
+  comer: 'eten', beber: 'drinken', aprender: 'leren', temer: 'vrezen, bang zijn', creer: 'geloven', vender: 'verkopen',
+  responder: 'antwoorden', correr: 'rennen', leer: 'lezen', comprender: 'begrijpen', vivir: 'leven, wonen',
+  abrir: 'openen', partir: 'breken, vertrekken', recibir: 'ontvangen', discutir: 'bespreken, ruziën', subir: 'omhooggaan',
+  repartir: 'uitdelen', sufrir: 'lijden, verdragen', escribir: 'schrijven', decidir: 'beslissen',
+}
+
+export function verbMeaning(infinitive: string): string | undefined {
+  return MEANINGS[infinitive.toLowerCase()]
+}
+
+export function knownVerbs(): string[] {
+  return [...KNOWN]
+}

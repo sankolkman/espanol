@@ -1,4 +1,5 @@
 import type { Dialogue, Lesson, Passage, Reading, Word } from '../content/types'
+import { chunkSentence, wordCount, type Chunk } from './chunks'
 import { normalize } from './normalize'
 import { mulberry32, shuffle } from './shuffle'
 import { pickReview, type ItemProgress } from './srs'
@@ -6,11 +7,13 @@ import { pickReview, type ItemProgress } from './srs'
 export type Exercise =
   | { kind: 'intro'; itemId: string; word: Word }
   | { kind: 'choice'; itemId: string; prompt: string; promptLang: 'es' | 'nl'; options: string[]; answer: string }
-  | { kind: 'type'; itemId: string; prompt: string; promptLang: 'es' | 'nl'; accepted: string[] }
+  /** gap: long sentences show the Spanish with one part left out; only that part is typed */
+  | { kind: 'type'; itemId: string; prompt: string; promptLang: 'es' | 'nl'; accepted: string[]; gap?: { before: string; after: string } }
   | { kind: 'build'; itemId: string; promptNl: string; tiles: string[]; answer: string }
   /** gap: long sentences show the text with one word left out; only that word is typed */
   | { kind: 'listen'; itemId: string; es: string; accepted: string[]; gap?: { before: string; after: string } }
-  | { kind: 'speak'; itemId: string; es: string; nl: string; altEs?: string[] }
+  /** context: es is one part of a longer sentence (before + es + after) */
+  | { kind: 'speak'; itemId: string; es: string; nl: string; altEs?: string[]; context?: { before: string; after: string } }
   | { kind: 'grammar'; itemId: string; prompt: string; nl?: string; accepted: string[] }
   | { kind: 'dialogue'; itemId: string; dialogue: Dialogue }
   | { kind: 'reading'; itemId: string; reading: Reading }
@@ -49,6 +52,10 @@ const SENTENCE_FORMS_HARD: Form[] = ['type-nl', 'speak', 'build', 'listen', 'typ
 const LONG_SENTENCE_FORMS: Form[] = ['choice-es', 'listen', 'speak', 'choice-nl']
 /** from this many words on, listening asks for one missing word instead of the whole sentence */
 const LISTEN_GAP_WORDS = 6
+/** never ask to type or say more words than this */
+const MAX_PRODUCE_WORDS = 6
+/** typed part of a long sentence */
+const MAX_TYPE_PART_WORDS = 4
 const LONG_SENTENCE_WORDS = 9
 const CLOZE_DISTRACTORS = 2
 
@@ -99,14 +106,39 @@ function makeExercise(
       return { kind: 'choice', itemId: item.id, prompt: item.es, promptLang: 'es', options: options((x) => x.nl, item.altNl ?? []), answer: item.nl }
     case 'choice-nl':
       return { kind: 'choice', itemId: item.id, prompt: item.nl, promptLang: 'nl', options: options((x) => x.es, item.altEs ?? []), answer: item.es }
-    case 'type-nl':
-      return { kind: 'type', itemId: item.id, prompt: item.nl, promptLang: 'nl', accepted: accEs }
+    case 'type-nl': {
+      if (item.isWord || wordCount(item.es) <= MAX_PRODUCE_WORDS) {
+        return { kind: 'type', itemId: item.id, prompt: item.nl, promptLang: 'nl', accepted: accEs }
+      }
+      // long sentence: type only one part, the rest of the sentence is shown
+      const part = pickChunk(item.es, MAX_TYPE_PART_WORDS, 2, rng)
+      return {
+        kind: 'type',
+        itemId: item.id,
+        prompt: item.nl,
+        promptLang: 'nl',
+        accepted: [part.text],
+        gap: { before: item.es.slice(0, part.start), after: item.es.slice(part.end) },
+      }
+    }
     case 'type-es':
       return { kind: 'type', itemId: item.id, prompt: item.es, promptLang: 'es', accepted: [item.nl, ...(item.altNl ?? [])] }
     case 'listen':
       return listenExercise(item, accEs, rng)
-    case 'speak':
-      return { kind: 'speak', itemId: item.id, es: item.es, nl: item.nl, ...(item.altEs ? { altEs: item.altEs } : {}) }
+    case 'speak': {
+      if (item.isWord || wordCount(item.es) <= MAX_PRODUCE_WORDS) {
+        return { kind: 'speak', itemId: item.id, es: item.es, nl: item.nl, ...(item.altEs ? { altEs: item.altEs } : {}) }
+      }
+      // long sentence: say one part out loud, shown within the whole sentence
+      const part = pickChunk(item.es, MAX_PRODUCE_WORDS, 3, rng)
+      return {
+        kind: 'speak',
+        itemId: item.id,
+        es: part.text,
+        nl: item.nl,
+        context: { before: item.es.slice(0, part.start), after: item.es.slice(part.end) },
+      }
+    }
     case 'build': {
       const tiles = sentenceTiles(item.es)
       const own = new Set(tiles.map(normalize))
@@ -247,7 +279,7 @@ export function clozeExercise(lesson: Lesson, rng: () => number): Exercise {
 }
 
 /** listening: short items are typed in full; long sentences show the text with one word left out */
-function listenExercise(item: ReviewPoolItem, accepted: string[], rng: () => number): Exercise {
+export function listenExercise(item: ReviewPoolItem, accepted: string[], rng: () => number): Exercise {
   const words = Array.from(item.es.matchAll(/[\p{L}\p{N}]+/gu), (m) => ({ text: m[0], at: m.index! }))
   if (item.isWord || words.length < LISTEN_GAP_WORDS) return { kind: 'listen', itemId: item.id, es: item.es, accepted }
   const longer = words.filter((w) => w.text.length >= 4)
@@ -260,4 +292,12 @@ function listenExercise(item: ReviewPoolItem, accepted: string[], rng: () => num
     accepted: [pick.text],
     gap: { before: item.es.slice(0, pick.at), after: item.es.slice(pick.at + pick.text.length) },
   }
+}
+
+/** a random part of a long sentence; prefers parts with at least minWords words */
+export function pickChunk(sentence: string, max: number, minWords: number, rng: () => number): Chunk {
+  const parts = chunkSentence(sentence, max)
+  const good = parts.filter((p) => wordCount(p.text) >= minWords)
+  const pool = good.length ? good : parts
+  return pool[Math.floor(rng() * pool.length)]
 }

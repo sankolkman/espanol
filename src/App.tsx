@@ -2,6 +2,7 @@ import { GrammarScreen } from './ui/GrammarScreen'
 import { LessonScreen, ReviewScreen } from './ui/LessonScreen'
 import { PathScreen } from './ui/PathScreen'
 import { ReaderScreen } from './ui/ReaderScreen'
+import { LyricsScreen } from './ui/LyricsScreen'
 import { useRoute } from './ui/router'
 import { ProgressProvider } from './ui/SettingsContext'
 import { SettingsScreen } from './ui/SettingsScreen'
@@ -16,7 +17,8 @@ const NAV = [
 
 function Screens() {
   const route = useRoute()
-  const inLesson = route.name === 'lesson' || route.name === 'review' || route.name === 'reader'
+  const inLesson =
+    route.name === 'lesson' || route.name === 'review' || route.name === 'reader' || (route.name === 'lyrics' && !!route.id)
   return (
     <div className={`app ${inLesson ? 'in-lesson' : ''}`}>
       {route.name === 'lesson' && route.id ? (
@@ -25,6 +27,8 @@ function Screens() {
         <ReviewScreen key={route.id} pathId={route.id} />
       ) : route.name === 'reader' && route.id ? (
         <ReaderScreen key={route.id} lessonId={route.id} />
+      ) : route.name === 'lyrics' ? (
+        <LyricsScreen key={route.id ?? 'list'} songId={route.id} />
       ) : route.name === 'grammar' ? (
         <GrammarScreen pathId={route.id} />
       ) : route.name === 'words' ? (

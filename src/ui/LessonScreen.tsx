@@ -96,6 +96,22 @@ function LessonIntro({ lesson, pathId, onStart }: { lesson: Lesson; pathId: stri
       <p className="eyebrow muted">{unit?.title}</p>
       <h1>{lesson.title}</h1>
       <p>{lesson.intro}</p>
+      {lesson.song && (
+        <section className="card">
+          <h2>🎵 {lesson.song.title}</h2>
+          <p className="muted small">
+            In deze les leer je woorden die je in dit lied hoort. Luister het lied daarna (of ervoor) en let op de woorden.
+          </p>
+          <a
+            className="btn block"
+            target="_blank"
+            rel="noreferrer"
+            href={`https://www.youtube.com/results?search_query=${encodeURIComponent(lesson.song.query)}`}
+          >
+            Zoek het lied op YouTube ↗
+          </a>
+        </section>
+      )}
       {lesson.chapter && (
         <section className="card">
           <h2>Waar gaat het over?</h2>

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { diffAnswer, explainWord, type DiffWord } from '../logic/answerDiff'
 import { lookupWord } from '../logic/glossary'
 import { normalize } from '../logic/normalize'
-import { conjugate, PERSONS, TENSE_LABELS, TENSES, type Tense } from '../logic/verbs'
+import { conjugate, findVerbForms, PERSONS, TENSE_LABELS, TENSES, verbMeaning, type Tense } from '../logic/verbs'
 import { appGlossary } from './glossary'
 import { SpeakButton } from './SpeakButton'
 
@@ -39,15 +39,46 @@ export function AnswerReview(props: { given: string; accepted: string[]; lang: '
   )
 }
 
+/** meaning of a Spanish word: from the lesson words, else (for verb forms) the verb's meaning */
+function meaningOf(form: string): { label: string; nl: string } | undefined {
+  const w = normalize(form)
+  const entry = lookupWord(appGlossary(), w)
+  if (entry) return { label: entry.es, nl: entry.nl }
+  const verb = findVerbForms(w)[0]
+  const nl = verb && verbMeaning(verb.infinitive)
+  if (verb && nl) return { label: `${w} (vorm van ${verb.infinitive})`, nl }
+  return undefined
+}
+
 function WordExplain({ word, lang }: { word: DiffWord; lang: 'es' | 'nl' }) {
-  const meaning = lang === 'es' ? lookupWord(appGlossary(), normalize(word.expected)) : undefined
+  const expected = normalize(word.expected)
+  const meaning = lang === 'es' ? meaningOf(word.expected) : undefined
+  const verbNl = word.verb && verbMeaning(word.verb.infinitive)
+  const givenMeaning =
+    lang === 'es' && word.given && (word.status === 'wrong' || word.status === 'article') ? meaningOf(word.given) : undefined
   return (
     <div className="explain" role="note">
       <p>{explainWord(word)}</p>
-      {meaning && (
+      {lang === 'es' && (
         <p>
-          {lang === 'es' && <SpeakButton text={normalize(word.expected)} />}{' '}
-          <strong lang="es">{meaning.es}</strong> = {meaning.nl}
+          <SpeakButton text={expected} />{' '}
+          {meaning ? (
+            <>
+              Betekenis: <strong lang="es">{meaning.label}</strong> = {meaning.nl}
+            </>
+          ) : (
+            <span className="muted">De betekenis van "{expected}" staat (nog) niet in de woordenlijst.</span>
+          )}
+        </p>
+      )}
+      {word.verb && verbNl && !meaning?.label.includes(word.verb.infinitive) && (
+        <p>
+          Werkwoord: <strong lang="es">{word.verb.infinitive}</strong> = {verbNl}
+        </p>
+      )}
+      {givenMeaning && (
+        <p>
+          Jouw woord <strong lang="es">"{normalize(word.given!)}"</strong> betekent: {givenMeaning.nl}
         </p>
       )}
       {word.verb && <VerbTable word={word} />}

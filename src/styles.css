@@ -1070,3 +1070,39 @@ details.card[open] summary {
   font-size: 0.78rem;
   color: var(--muted);
 }
+
+.in-context {
+  font-weight: 500;
+  line-height: 1.7;
+}
+.in-context mark {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 6px;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* music path */
+.hero-muziek {
+  background: linear-gradient(135deg, var(--hero-3) 0%, var(--hero-2) 50%, var(--hero-1) 100%);
+}
+.own-songs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  margin-top: 0;
+  border: 2px dashed var(--accent);
+}
+textarea {
+  font: inherit;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+}

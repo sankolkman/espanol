@@ -43,10 +43,18 @@ export function Speak({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
 
   return (
     <div>
-      <p className="kind">Zeg het hardop</p>
+      <p className="kind">{ex.context ? 'Zeg het gemarkeerde deel hardop' : 'Zeg het hardop'}</p>
       <div className="prompt">
         <SpeakButton text={ex.es} />
-        <span lang="es">{ex.es}</span>
+        {ex.context ? (
+          <span lang="es" className="in-context">
+            {ex.context.before}
+            <mark>{ex.es}</mark>
+            {ex.context.after}
+          </span>
+        ) : (
+          <span lang="es">{ex.es}</span>
+        )}
       </div>
       <p className="muted">{ex.nl}</p>
       {!locked && (
@@ -68,9 +76,14 @@ export function Speak({ ex, locked, onResult }: ExerciseProps<Extract<Exercise, 
             <div className="notice">
               Ik hoorde: “{heard}”. {fails < MAX_TRIES ? 'Probeer het nog een keer.' : ''}
               <div style={{ marginTop: 8 }}>
-                <button className="btn" onClick={() => say(ex.es)}>
-                  🔊 Voorbeeld
-                </button>
+                <div className="row">
+                  <button className="btn" onClick={() => say(ex.es)}>
+                    🔊 Voorbeeld
+                  </button>
+                  <button className="btn" onClick={() => say(ex.es, true)} aria-label="Langzaam voorbeeld">
+                    🐢 Langzaam
+                  </button>
+                </div>
               </div>
             </div>
           )}
