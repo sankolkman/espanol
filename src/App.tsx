@@ -3,6 +3,7 @@ import { LessonScreen, ReviewScreen } from './ui/LessonScreen'
 import { PathScreen } from './ui/PathScreen'
 import { ReaderScreen } from './ui/ReaderScreen'
 import { LyricsScreen } from './ui/LyricsScreen'
+import { SourceTextScreen } from './ui/SourceTextScreen'
 import { useRoute } from './ui/router'
 import { ProgressProvider } from './ui/SettingsContext'
 import { SettingsScreen } from './ui/SettingsScreen'
@@ -18,7 +19,11 @@ const NAV = [
 function Screens() {
   const route = useRoute()
   const inLesson =
-    route.name === 'lesson' || route.name === 'review' || route.name === 'reader' || (route.name === 'lyrics' && !!route.id)
+    route.name === 'lesson' ||
+    route.name === 'review' ||
+    route.name === 'reader' ||
+    route.name === 'text' ||
+    (route.name === 'lyrics' && !!route.id && !route.id.startsWith('nieuw:'))
   return (
     <div className={`app ${inLesson ? 'in-lesson' : ''}`}>
       {route.name === 'lesson' && route.id ? (
@@ -27,6 +32,8 @@ function Screens() {
         <ReviewScreen key={route.id} pathId={route.id} />
       ) : route.name === 'reader' && route.id ? (
         <ReaderScreen key={route.id} lessonId={route.id} />
+      ) : route.name === 'text' && route.id ? (
+        <SourceTextScreen key={route.id} lessonId={route.id} />
       ) : route.name === 'lyrics' ? (
         <LyricsScreen key={route.id ?? 'list'} songId={route.id} />
       ) : route.name === 'grammar' ? (

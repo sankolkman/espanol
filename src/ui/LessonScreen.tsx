@@ -9,6 +9,7 @@ import { Markdown } from './markdown'
 import { lessonUnlocked } from './paths'
 import { go } from './router'
 import { useProgress } from './SettingsContext'
+import { SourceTextButton } from './SourceTextScreen'
 
 const closeTo = (pathId: string) => () => {
   if (confirm('Les stoppen? Je voortgang in deze les gaat verloren.')) go(`#/pad/${pathId}`)
@@ -55,7 +56,7 @@ export function LessonScreen({ lessonId }: { lessonId: string }) {
   if (phase === 'run') return <LessonRunner exercises={exercises} onFinish={finish} onClose={closeTo(pathId)} />
   if (phase === 'done' && summary) {
     const next = nextLessonId(siblingIds(lesson.id), [...progress.completedLessons, lesson.id])
-    return <LessonDone summary={summary} nextId={next} pathId={pathId} />
+    return <LessonDone summary={summary} nextId={next} pathId={pathId} lessonId={lesson.id} />
   }
   return <LessonIntro lesson={lesson} pathId={pathId} onStart={start} />
 }
@@ -141,6 +142,7 @@ function LessonIntro({ lesson, pathId, onStart }: { lesson: Lesson; pathId: stri
         </section>
       )}
       <ActionBar>
+        {!lesson.chapter && <SourceTextButton lesson={lesson} />}
         <button className="btn primary block" onClick={onStart}>
           Start de les
         </button>
@@ -162,7 +164,14 @@ function lookup(id: string): { es: string; nl: string } | null {
   return null
 }
 
-function LessonDone(props: { summary: LessonSummary; nextId?: string | null; title?: string; pathId: string }) {
+export function LessonDone(props: {
+  summary: LessonSummary
+  nextId?: string | null
+  title?: string
+  pathId: string
+  /** the finished lesson (for the "whole text" button) */
+  lessonId?: string
+}) {
   const { correct, total, weakItems } = props.summary
   const pct = total ? Math.round((correct / total) * 100) : 100
   return (
@@ -195,6 +204,7 @@ function LessonDone(props: { summary: LessonSummary; nextId?: string | null; tit
         </section>
       )}
       <ActionBar>
+        <SourceTextButton lesson={props.lessonId ? lessonById(props.lessonId) : undefined} />
         {props.nextId && (
           <a className="btn primary" href={`#/les/${props.nextId}`}>
             Volgende les

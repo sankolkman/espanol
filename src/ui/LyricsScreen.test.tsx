@@ -47,3 +47,11 @@ describe('LyricsScreen', () => {
     expect(document.querySelector('.runner')).not.toBeNull()
   })
 })
+
+describe('LyricsScreen prefill', () => {
+  it('opens the add form with the song title filled in', () => {
+    renderScreen('nieuw:Océanos')
+    expect(screen.getByRole('textbox', { name: 'Titel' })).toHaveValue('Océanos')
+    expect(document.querySelector('.runner')).toBeNull()
+  })
+})

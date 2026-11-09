@@ -7,8 +7,10 @@ import { useProgress } from './SettingsContext'
 
 export function LyricsScreen({ songId }: { songId?: string }) {
   const [songs, setSongs] = useState<UserSong[]>(() => loadSongs())
-  const song = songId ? songs.find((s) => s.id === songId) : undefined
-  if (songId) return song ? <Practice song={song} /> : <NotFound />
+  // "nieuw:<title>" opens the list with the add form prefilled with that title
+  const newTitle = songId?.startsWith('nieuw:') ? songId.slice('nieuw:'.length) : undefined
+  const song = songId && !newTitle ? songs.find((s) => s.id === songId) : undefined
+  if (songId && !newTitle) return song ? <Practice song={song} /> : <NotFound />
 
   const persist = (next: UserSong[]) => {
     setSongs(next)
@@ -42,13 +44,13 @@ export function LyricsScreen({ songId }: { songId?: string }) {
           </div>
         </section>
       ))}
-      <AddSong onAdd={(s) => persist([...songs, s])} />
+      <AddSong initialTitle={newTitle} onAdd={(s) => persist([...songs, s])} />
     </main>
   )
 }
 
-function AddSong({ onAdd }: { onAdd(s: UserSong): void }) {
-  const [title, setTitle] = useState('')
+function AddSong({ onAdd, initialTitle }: { onAdd(s: UserSong): void; initialTitle?: string }) {
+  const [title, setTitle] = useState(initialTitle ?? '')
   const [text, setText] = useState('')
   const lines = useMemo(() => lyricLines(text), [text])
   const save = () => {

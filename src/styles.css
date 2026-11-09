@@ -1106,3 +1106,15 @@ textarea {
   color: var(--text);
   resize: vertical;
 }
+
+.song-text {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.song-text p {
+  margin: 0;
+}

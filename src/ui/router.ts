@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 export type Route = {
-  name: 'path' | 'lesson' | 'review' | 'reader' | 'lyrics' | 'grammar' | 'words' | 'settings'
+  name: 'path' | 'lesson' | 'review' | 'reader' | 'lyrics' | 'text' | 'grammar' | 'words' | 'settings'
   id?: string
 }
 
@@ -15,6 +15,8 @@ export function parseHash(hash: string): Route {
       return id ? { name: 'lesson', id } : { name: 'path' }
     case 'lees':
       return id ? { name: 'reader', id } : { name: 'path' }
+    case 'tekst':
+      return id ? { name: 'text', id } : { name: 'path' }
     case 'liedjes':
       return { name: 'lyrics', id }
     case 'herhalen':
